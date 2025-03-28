@@ -1,0 +1,108 @@
+version: '3.9'
+
+# Network for Laravel 8
+networks:
+  web_network:
+    name: language_school
+    driver: bridge
+
+services:
+  # supervisor:
+  #   build:
+  #     context: .
+  #     dockerfile: supervisor.dockerfile
+  #   container_name: supervisor
+  #   depends_on:
+  #     - app
+  #   volumes:
+  #     - ./:/var/www
+  #     - /var/www/vendor
+  #   networks:
+  #     - web_network
+
+  # PHP App Service
+  # app:
+  #   build:
+  #     context: ./
+  #     dockerfile: Dockerfile
+  #   image: service-language-school-app
+  #   container_name: service_language_school_app
+  #   restart: always
+  #   volumes:
+  #     - ./:/var/www
+  #     - ./php/php.ini:/usr/local/etc/php/php.ini
+  #     - /var/www/vendor
+  #   networks:
+  #     - web_network
+
+  # MySQL Database Service
+  db:
+    image: mariadb:10.11.6
+    environment:
+      MARIADB_ROOT_PASSWORD: 12345678
+    ports:
+      - "3308:3306"
+    restart: always
+    volumes:
+      - ./data:/var/lib/mysql:rw
+    networks:
+      - web_network
+
+  # Nginx Web Server Service
+  # nginx:
+  #   image: nginx:1.19.8-alpine
+  #   container_name: service_language_school_nginx
+  #   volumes:
+  #     - ./:/var/www
+  #     - ./nginx/conf:/etc/nginx/conf.d
+  #     - /var/www/vendor
+  #   ports:
+  #     - "8000:80"
+  #   restart: always
+  #   networks:
+  #     - web_network
+
+  # phpMyAdmin (MySQL managment)
+  phpmyadmin:
+    image: phpmyadmin:5.2.1
+    depends_on:
+      - db
+    container_name: service_language_school_phpmyadmin
+    environment:
+      - PMA_ARBITRARY=1
+    ports:
+      - 8200:80
+    restart: always
+    networks:
+      - web_network
+
+  # redis:
+  #   image: redis:7.4.1
+  #   container_name: redis
+  #   ports:
+  #     - 6379:6379
+  #   volumes:
+  #     - ./data/redis:/data/:rw
+  #     - ./redis/redis.conf:/redis.conf
+  #   command: redis-server /redis.conf
+  #   networks:
+  #     - web_network
+
+# React App Service
+  # react_coffee_front_house:
+  #   build: next-js-coffee-house/
+  #   image: coffee-front-house
+  #   container_name: coffee_front_house
+  #   volumes:
+  #     - ./next-js-coffee-house:/usr/app
+  #     - /usr/app/node_modules #block
+  #   ports:
+  #     - "3000:3000"
+  #     # - "8181:80"
+  #   environment:
+  #     - CHOKIDAR_USEPOLLING=true
+  #   restart: always
+  #   networks:
+  #     - web_network
+
+
