@@ -12,7 +12,7 @@ Route::group(['prefix' => '/v1'], function () {
     // Route::group( 'prefix' => '/admin'], function () {
     Route::group(['middleware' => ['auth:sanctum', 'ability:admin'], 'prefix' => '/admin'], function () {
         Route::resource('strategic', StrategicController::class);
-        Route::resource('Actionplan', ActionplanController::class);
+        Route::resource('actionplan', ActionplanController::class);
         Route::resource('project', ProjectController::class);
         Route::resource('activity', ActivityController::class);
     });

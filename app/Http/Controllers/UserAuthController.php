@@ -16,9 +16,11 @@ class UserAuthController extends Controller
 
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = $request->user();
+            $fullname = $user->name;
+            $userID = $user->id;
             $token = $user->createToken('my-app-token', ['admin'])->plainTextToken;
 
-            return response()->json(['token' => $token], 200);
+            return response()->json(['token' => $token,'fullname'=>$fullname,'id'=>$userID], 200);
         }
 
         return response()->json(['message' => 'Incorrect credentials'], 401);
