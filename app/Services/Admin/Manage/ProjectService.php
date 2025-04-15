@@ -20,4 +20,13 @@ class ProjectService
         $project = Project::findOrFail($id);
         return $project;
     }
+    public function getByIDactionplan($id)
+    {
+        $project = Project::where('id_action_plan',$id)
+        ->orderBy('project_number')
+        ->paginate(10)
+        ->withQueryString();
+        return $project;
+    }
+
 }

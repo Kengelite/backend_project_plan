@@ -20,4 +20,14 @@ class ActivityService
         $activity = Activity::findOrFail($id);
         return $activity;
     }
+
+    public function getByIDactivity($id)
+    {
+        $project = Activity::where('id_project',$id)
+        ->orderBy('id')
+        ->paginate(10)
+        ->withQueryString();
+        return $project;
+    }
+
 }

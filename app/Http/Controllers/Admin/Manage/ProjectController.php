@@ -30,6 +30,26 @@ class ProjectController extends Controller
         }
     }
 
+    public function project_by_idactionplan(ProjectService $projectService,Request $request)
+    {
+
+        try {
+            $id_actionplan = $request->id_actionplan;
+            $result = $projectService->getByIDactionplan($id_actionplan);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
     /**
      * Show the form for creating a new resource.
      */

@@ -19,6 +19,14 @@ class ActionplanService{
         return $actionPlan;
     }
 
+    public function getByIDstrategic($id)
+    {
+        $actionPlan = ActionPlan::where('strategic_id',$id)
+        ->orderBy('action_plan_number')
+        ->paginate(10)->withQueryString();
+        return $actionPlan;
+    }
+
 
     // public function store(StrategicDTO $strategicDTO)
     // {

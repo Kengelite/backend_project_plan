@@ -30,6 +30,28 @@ class ActionplanController extends Controller
         }
     }
 
+
+    public function actionplan_by_idstrategic(ActionplanService $actionplanService,Request $request)
+    {
+
+        try {
+            $id_strategic = $request->id_strategic;
+            $result = $actionplanService->getByIDstrategic($id_strategic);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
     /**
      * Show the form for creating a new resource.
      */
