@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserAuthController;
 
 require __DIR__ . '/admin.php';
+require __DIR__ . '/user.php';
 
 Route::get('/user', function (Request $request) {
     return $request->user();
