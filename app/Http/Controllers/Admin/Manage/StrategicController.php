@@ -20,7 +20,7 @@ class StrategicController extends Controller
     {
         try {
             $result = $strategicService->getLatestYearStrategic();
-            $res = new HTTPSuccessResponse(['data' => $result]);
+            $res = new HTTPSuccessResponse(['data' => $result,'year' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
             return response()->json([
