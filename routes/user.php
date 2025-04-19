@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => '/v1'], function () {
     // Route::group( 'prefix' => '/admin'], function () {
-    Route::group(['middleware' => ['auth:sanctum', 'ability:1'], 'prefix' => '/admin'], function () {
-        // TODO
+    Route::group(['middleware' => ['auth:sanctum', 'ability:1'], 'prefix' => '/user'], function () {
+        Route::resource('strategic', StrategicController::class);
     });
 });
