@@ -5,18 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ActionPlan extends Model
+class Obstacle extends Model
 {
     use SoftDeletes;
 
-    protected $table = 'Action_Plan';
+    protected $table = 'obstacle';
 
     /**
      * The primary key associated with the table.
      *
      * @var string
      */
-    protected $primaryKey = 'action_plan_id';
+    protected $primaryKey = 'id_obstacle';
 
     /**
      * Indicates if the model's ID is auto-incrementing.
@@ -43,12 +43,8 @@ class ActionPlan extends Model
     const DELETED_AT = 'deleted_at';
 
     protected $fillable = [
-        'action_plan_id',
-        'action_plan_number',
-        'name_ap',
-        'budget',
-        'spend_money',
+        'id_obstacle',
+        'name_obstacle',
         'status',
-        'id_strategic',
     ];
 }
