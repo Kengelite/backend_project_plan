@@ -34,7 +34,7 @@ class StrategicController extends Controller
         }
     }
 
-    
+
     public function updatestatusStrategic(StrategicService $strategicService,Request $request){
         try {
             $id_strategic = $request->id_strategic;

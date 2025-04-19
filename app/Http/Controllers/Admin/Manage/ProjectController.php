@@ -3,12 +3,16 @@
 namespace App\Http\Controllers\Admin\Manage;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\Manage\ProjectRequest;
+use App\Http\Resources\HTTPCreatedResponse;
 use App\Http\Resources\HTTPSuccessResponse;
 use App\Services\Admin\Manage\ProjectService;
+use App\Trait\Utils;
 use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
+    use Utils;
     /**
      * Display a listing of the resource.
      */
@@ -82,9 +86,23 @@ class ProjectController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(ProjectRequest $request,ProjectService $projectService)
     {
-        //
+        try {
+            $studentCourseDTO = $this->projectRequestToProjectDTO($request);
+            $result = $projectService->store($studentCourseDTO);
+            $res = new HTTPCreatedResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_CREATED);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
