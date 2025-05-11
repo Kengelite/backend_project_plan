@@ -20,7 +20,7 @@ class StrategicController extends Controller
     {
         try {
             $result = $strategicService->getLatestYearStrategic();
-            $res = new HTTPSuccessResponse(['data' => $result,'year' => $result]);
+            $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
             return response()->json([
@@ -35,7 +35,8 @@ class StrategicController extends Controller
     }
 
 
-    public function updatestatusStrategic(StrategicService $strategicService,Request $request){
+    public function updatestatusStrategic(StrategicService $strategicService, Request $request)
+    {
         try {
             $id_strategic = $request->id_strategic;
             $result = $strategicService->updateStatus($id_strategic);
@@ -53,7 +54,8 @@ class StrategicController extends Controller
         }
     }
 
-    public function getStrategicByYear(StrategicService $strategicService,Request $request){
+    public function getStrategicByYear(StrategicService $strategicService, Request $request)
+    {
         try {
             $year_id = $request->year_id;
             $result = $strategicService->getByYear($year_id);
@@ -114,8 +116,22 @@ class StrategicController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
+    public function destroy(StrategicService $strategicService, Request $request)
     {
-        //
+        try {
+            $id_strategic = $request->id_strategic;
+            $result = $strategicService->delete($id_strategic);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 }

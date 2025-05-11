@@ -50,6 +50,19 @@ class ProjectService
         return $project;
     }
 
+
+    public function getByIDYear($id, $perPage)
+    {
+
+        $project = Project::where('id_year', $id)
+            ->orderBy('project_number')
+            // ->with('strategic')
+            ->paginate($perPage);
+
+        return $project;
+    }
+
+
     public function store(ProjectDTO $projectDTO)
     {
         $projectDB = new Project();
@@ -58,7 +71,7 @@ class ProjectService
             // Action plan
             $actionPlanDTO = $projectDTO->actionPlanDTO;
             $actionPlanDB = ActionPlan::findOrFail($actionPlanDTO->actionPlanID);
-            $actionPlanDB->save();
+            // $actionPlanDB->save();
 
             // Project
             $projectDB->project_name = $projectDTO->projectName;
@@ -123,5 +136,15 @@ class ProjectService
         });
 
         return  $projectDB;
+    }
+
+    public function delete($id)
+    {
+        // $strategic = Strategic::findOrFail($id)->delete();
+        // return $strategic;
+
+        $project = Project::where('project_id', $id)->firstOrFail();
+        $project->delete();
+        return $project;
     }
 }

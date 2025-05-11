@@ -20,7 +20,7 @@ class StrategicService
     {
         $strategic = Strategic::findOrFail($id);
         return $strategic;
-    }  
+    }
 
     public function getLatestYearStrategic()
     {
@@ -42,26 +42,31 @@ class StrategicService
         ->withQueryString();
 
         return $strategic;
-    }  
+    }
     public function updateStatus($id)
     {
         // ดึงข้อมูลที่ต้องการอัปเดตจากฐานข้อมูล
         $strategic = Strategic::where("strategic_id", $id);
-        
+
         // สลับสถานะจาก 0 เป็น 1 หรือจาก 1 เป็น 0
         $updated = $strategic->update([
             'status' => $strategic->first()->status == 0 ? 1 : 0
         ]);
 
-    
+
         // คืนค่าข้อมูลที่ถูกอัปเดต
         return $strategic;
     }
-    // public function delete($id)
-    // {
-    //     $strategic = Strategic::findOrFail($id)->delete();
-    //     return $strategic;
-    // }
+
+    public function delete($id)
+    {
+        // $strategic = Strategic::findOrFail($id)->delete();
+        // return $strategic;
+
+        $strategic = Strategic::where('strategic_id', $id)->firstOrFail();
+        $strategic->delete();
+        return $strategic;
+    }
 
     // public function store(StrategicDTO $strategicDTO)
     // {

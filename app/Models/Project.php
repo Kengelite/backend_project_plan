@@ -43,6 +43,11 @@ class Project extends Model
     const UPDATED_AT = 'updated_at';
     const DELETED_AT = 'deleted_at';
 
+    public function projectUsers()
+    {
+        return $this->hasMany(ProjectUser::class, 'project_id');
+    }
+    
     protected $fillable = [
         'project_id',
         'project_number',

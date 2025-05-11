@@ -51,4 +51,8 @@ class ActionPlan extends Model
         'status',
         'id_strategic',
     ];
+    public function strategic()
+    {
+        return $this->belongsTo(Strategic::class, 'id_strategic'); // โดยที่ project_id คือ key ที่เชื่อมกัน
+    }
 }

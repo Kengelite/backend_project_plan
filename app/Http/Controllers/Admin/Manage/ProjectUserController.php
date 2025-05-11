@@ -4,20 +4,15 @@ namespace App\Http\Controllers\Admin\Manage;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Services\Admin\Manage\ProjectUserService;
 use App\Http\Resources\HTTPSuccessResponse;
-use App\Services\Admin\Manage\ActionplanService;
-use App\Trait\Utils;
-use App\Http\Requests\Admin\Manage\ActionplanRequest;
 
-class ActionplanController extends Controller
+class ProjectUserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index(ActionplanService $actionplanService)
+    public function index(ProjectUserService $projectUserService)
     {
         try {
-            $result = $actionplanService->getAll();
+            $result = $projectUserService->getAll();
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -31,14 +26,10 @@ class ActionplanController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
-
-    public function actionplanByIdstrategic(ActionplanService $actionplanService, Request $request)
+    public function getByIdUser(ProjectUserService $projectUserService)
     {
-
         try {
-            $id_strategic = $request->id_strategic;
-            $result = $actionplanService->getByIDstrategic($id_strategic);
+            $result = $projectUserService->getByIDUser();
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -52,34 +43,11 @@ class ActionplanController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
-
-    public function updatestatusActionplan(ActionplanService $actionplanService, Request $request)
-    {
-        try {
-            $id_actionplan = $request->id_actionplan;
-            $result = $actionplanService->updateStatus($id_actionplan);
-            $res = new HTTPSuccessResponse(['data' => $result]);
-            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
-        } catch (\App\Exceptions\CustomException $e) {
-            return response()->json([
-                'message' => $e->getMessage(),
-                'errors' => $e->getErrorDetails()
-            ], $e->getStatusCode());
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-
-
-    public function getByIdYear(ActionplanService $actionplanService,Request $request)
+    public function getByIdYear(ProjectUserService $projectUserService,Request $request)
     {
         try {
             $id_year = $request->id_year;
-            $perPage = $request->input('per_page', 10);
-            $result = $actionplanService->getByIDYear($id_year,$perPage);
+            $result = $projectUserService->getByIDYear($id_year);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -93,55 +61,11 @@ class ActionplanController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(ActionplanRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(ActionplanRequest $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ActionplanService $strategicService, Request $request)
+    public function getByIdUserYearAdmin(ProjectUserService $projectUserService,Request $request)
     {
         try {
-            $id_actionplan = $request->id_actionplan;
-            $result = $strategicService->delete($id_actionplan);
+            $id_year = $request->id_year;
+            $result = $projectUserService->getByIDYearAdmin($id_year);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -155,4 +79,5 @@ class ActionplanController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
 }
