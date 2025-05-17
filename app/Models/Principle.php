@@ -16,7 +16,7 @@ class Principle extends Model
      *
      * @var string
      */
-    protected $primaryKey = 'id_priciples';
+    protected $primaryKey = 'principle_id';
 
     /**
      * Indicates if the model's ID is auto-incrementing.
@@ -43,9 +43,8 @@ class Principle extends Model
     const DELETED_AT = 'deleted_at';
 
     protected $fillable = [
-        'id_priciples',
-        'name_priciples',
+        'principle_id',
+        'principle_name',
         'status',
-        'id_project',
     ];
 }

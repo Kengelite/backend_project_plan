@@ -16,4 +16,12 @@ class Strategic extends Model
     {
         return $this->hasMany(actionplan::class, 'strategic_id');
     }
+
+    protected $fillable = [
+        'strategic_id',
+        'strategic_number',
+        'strategic_name',
+        'budget',
+        'id_year'
+    ];
 }

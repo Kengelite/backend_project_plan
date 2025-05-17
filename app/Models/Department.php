@@ -4,11 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-class Okr extends Model
+class Department extends Model
 {
-    //
     use SoftDeletes;
-    protected $table = 'okr';
-    protected $primaryKey = 'okr_id';
+    protected $table = 'departments';
+    protected $primaryKey = 'departments_id';
     protected $keyType = 'string';
+
 }

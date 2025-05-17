@@ -3,28 +3,30 @@
 namespace App\Services\Admin\Manage;
 
 use App\Dto\ActivityDTO;
-use App\Models\Activity;
+use App\Models\Style;
 use App\Trait\Utils;
 use App\Models\ActivityUser;
+use App\Dto\TypeDTO;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
-class ActivityService
+class StyleService
 {
     use Utils;
-    public function getAll()
+    public function getAll($perPage)
     {
-        $activity = Activity::paginate(10)->withQueryString();
+        $activity = Style::paginate($perPage)->withQueryString();
         return $activity;
     }
     public function getByID($id)
     {
-        $activity = Activity::findOrFail($id);
+        $activity = Style::findOrFail($id);
         return $activity;
     }
 
     public function getByIDactivity($id)
     {
-        $activity = Activity::where('id_project',$id)
+        $activity = Style::where('id_project',$id)
         ->where('status', 1)
         ->orderBy('id')
         ->paginate(10)
@@ -33,7 +35,7 @@ class ActivityService
     }
     public function getByIDactivityAdmin($id)
     {
-        $activity = Activity::where('id_project',$id)
+        $activity = Style::where('id_project',$id)
         ->orderBy('id')
         ->paginate(10)
         ->withQueryString();
@@ -43,7 +45,7 @@ class ActivityService
     public function updateStatus($id)
     {
         // ดึงข้อมูลที่ต้องการอัปเดตจากฐานข้อมูล
-        $activity = Activity::where("activity_id", $id);
+        $activity = Style::where("style_id", $id);
 
         // สลับสถานะจาก 0 เป็น 1 หรือจาก 1 เป็น 0
         $updated = $activity->update([
@@ -73,8 +75,8 @@ class ActivityService
     public function getByIDYear($id, $perPage)
     {
 
-        $project = Activity::where('id_year', $id)
-            ->orderBy('activity_id')
+        $project = Style::where('id_year', $id)
+            ->orderBy('style_id')
             // ->with('strategic')
             ->paginate($perPage);
 
@@ -85,8 +87,32 @@ class ActivityService
         // $strategic = Strategic::findOrFail($id)->delete();
         // return $strategic;
 
-        $activity = Activity::where('activity_id', $id)->firstOrFail();
+        $activity = Style::where('style_id', $id)->firstOrFail();
         $activity->delete();
         return $activity;
+    }
+    public function store(TypeDTO $typeDTO)
+    {
+        $departmentDB = new Style();
+
+        DB::transaction(function () use ($typeDTO, $departmentDB) {
+            // Project
+            $departmentDB->style_name = $typeDTO->nameStyle;
+            $departmentDB->save();
+        });
+
+        return  $departmentDB;
+    }
+    public function update(TypeDTO $typeDTO, $id)
+    {
+        return DB::transaction(function () use ($typeDTO, $id) {
+            $department = Style::where('style_id', $id)->firstOrFail();
+
+            $department->style_name = $typeDTO->nameStyle;
+
+            $department->save();
+
+            return $department;
+        });
     }
 }

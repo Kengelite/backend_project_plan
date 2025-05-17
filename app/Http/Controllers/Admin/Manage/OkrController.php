@@ -3,19 +3,19 @@
 namespace App\Http\Controllers\Admin\Manage;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\HTTPSuccessResponse;
-use App\Services\Admin\Manage\ActivityService;
 use Illuminate\Http\Request;
-
-class ActivityController extends Controller
+use App\Http\Resources\HTTPSuccessResponse;
+use App\Services\Admin\Manage\OkrService;
+class OkrController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(ActivityService $activityService)
+    public function index(OkrService $okrService,Request $request)
     {
         try {
-            $result = $activityService->getAll();
+            $perPage = $request->input('per_page', 10);
+            $result = $okrService->getAll($perPage);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -30,31 +30,12 @@ class ActivityController extends Controller
         }
     }
 
-    public function activityByIdproject(ActivityService $activityService,Request $request)
-    {
-
-        try {
-            $id_project = $request->id_project;
-            $result = $activityService->getByIDactivity($id_project);
-            $res = new HTTPSuccessResponse(['data' => $result]);
-            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
-        } catch (\App\Exceptions\CustomException $e) {
-            return response()->json([
-                'message' => $e->getMessage(),
-                'errors' => $e->getErrorDetails()
-            ], $e->getStatusCode());
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-    public function activityByIdprojectAdmin(ActivityService $activityService,Request $request)
+    public function activityByIdproject(OkrService $okrService,Request $request)
     {
 
         try {
             $id_project = $request->id_project;
-            $result = $activityService->getByIDactivityAdmin($id_project);
+            $result = $okrService->getByIDactivity($id_project);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -68,12 +49,12 @@ class ActivityController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    public function activityByIdprojectAdmin(OkrService $okrService,Request $request)
+    {
 
-
-    public function updatestatusActivity(ActivityService $activityService,Request $request){
         try {
-            $activity_id = $request->activity_id;
-            $result = $activityService->updateStatus($activity_id);
+            $id_project = $request->id_project;
+            $result = $okrService->getByIDactivityAdmin($id_project);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -88,10 +69,29 @@ class ActivityController extends Controller
         }
     }
 
-    public function getActivityUserYear(ActivityService $activityService,Request $request){
+
+    public function updatestatusOkr(OkrService $okrService,Request $request){
+        try {
+            $id = $request->id;
+            $result = $okrService->updateStatus($id);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function getActivityUserYear(OkrService $okrService,Request $request){
         try {
             $id_year = $request->id_year;
-            $result = $activityService->getByIDUser($id_year);
+            $result = $okrService->getByIDUser($id_year);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -107,12 +107,12 @@ class ActivityController extends Controller
     }
 
 
-    public function getByIdYear(ActivityService $activityService,Request $request)
+    public function getByIdYear(OkrService $okrService,Request $request)
     {
         try {
             $id_year = $request->id_year;
             $perPage = $request->input('per_page', 10);
-            $result = $activityService->getByIDYear($id_year,$perPage);
+            $result = $okrService->getByIDYear($id_year,$perPage);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -171,11 +171,11 @@ class ActivityController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ActivityService $activityService, Request $request)
+    public function destroy(OkrService $okrService, Request $request)
     {
         try {
-            $id_activity = $request->id_activity;
-            $result = $activityService->delete($id_activity);
+            $id = $request->id;
+            $result = $okrService->delete($id);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -190,3 +190,4 @@ class ActivityController extends Controller
         }
     }
 }
+

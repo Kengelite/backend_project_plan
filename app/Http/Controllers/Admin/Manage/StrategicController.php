@@ -9,10 +9,11 @@ use App\Services\Admin\Manage\StrategicService;
 use App\Services\Admin\Manage\YearService;
 use App\Trait\Utils;
 use Illuminate\Http\Request;
+use App\Http\Resources\HTTPCreatedResponse;
 
 class StrategicController extends Controller
 {
-    // use Utils;
+    use Utils;
     /**
      * Display a listing of the resource.
      */
@@ -73,6 +74,26 @@ class StrategicController extends Controller
         }
     }
 
+    public function getStrategicByYearForAdd(StrategicService $strategicService, Request $request)
+    {
+        try {
+            $year_id = $request->year_id;
+            $result = $strategicService->getByYearForAdd($year_id);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
     /**
      * Show the form for creating a new resource.
      */
@@ -84,10 +105,26 @@ class StrategicController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(StrategicRequest $request)
+    public function store(StrategicRequest $request, StrategicService $strategicService)
     {
-        //
+        try {
+            $studentCourseDTO = $this->strategicRequestToStrategicDTO($request);
+            $result = $strategicService->store($studentCourseDTO);
+            // $result = $request->department_name;
+            $res = new HTTPCreatedResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_CREATED);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
+
 
     /**
      * Display the specified resource.
@@ -108,9 +145,24 @@ class StrategicController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(StrategicRequest $request, string $id)
+    public function update(StrategicRequest $request, StrategicService $strategicService, string $id)
     {
-        //
+        try {
+            $studentCourseDTO = $this->strategicRequestToStrategicDTO($request);
+            $result = $strategicService->update($studentCourseDTO, $id);
+            // $result = $request->department_name;
+            $res = new HTTPCreatedResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_CREATED);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**

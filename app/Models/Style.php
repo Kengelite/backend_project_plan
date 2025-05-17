@@ -5,11 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class Year extends Model
+class Style extends Model
 {
-    //
     use SoftDeletes;
-    protected $table = 'Year';
-    protected $primaryKey = 'year_id';
+    protected $table = 'style';
+    protected $primaryKey = 'style_id';
     protected $keyType = 'int';
+
 }

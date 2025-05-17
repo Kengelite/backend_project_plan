@@ -47,7 +47,7 @@ class Project extends Model
     {
         return $this->hasMany(ProjectUser::class, 'project_id');
     }
-    
+
     protected $fillable = [
         'project_id',
         'project_number',

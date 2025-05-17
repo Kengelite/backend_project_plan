@@ -10,5 +10,6 @@ class ActionPlanDTO
     public string $budget;
     public string $spendMoney;
     public string $status;
-
+    public string $idYear;
+    public string $idStrategic;
 }

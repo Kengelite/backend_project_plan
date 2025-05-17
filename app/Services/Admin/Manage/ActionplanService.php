@@ -6,7 +6,7 @@ use App\Dto\ActionPlanDTO;
 use App\Models\ActionPlan;
 use App\Trait\Utils;
 use Illuminate\Notifications\Action;
-
+use Illuminate\Support\Facades\DB;
 class ActionplanService
 {
     use Utils;
@@ -21,11 +21,41 @@ class ActionplanService
         return $actionPlan;
     }
 
-    public function getByIDstrategic($id)
+    public function getByIDstrategic($id,$perPage)
     {
-        $actionPlan = ActionPlan::where('id_strategic', $id)
-            ->orderBy('action_plan_number')
-            ->paginate(10)->withQueryString();
+
+        $actionPlan = DB::table('action_plan')
+        ->leftJoin('project', 'action_plan.action_plan_id', '=', 'project.id_action_plan')
+        ->select(
+            'action_plan_id',
+            'action_plan_number',
+            'name_ap',
+            'action_plan.budget',
+            'action_plan.spend_money',
+            'action_plan.status',
+            'id_strategic',
+            'action_plan.id_year',
+            DB::raw('COUNT(DISTINCT project.project_id) as projects_count')
+        )
+        ->where('id_strategic', $id)
+        ->whereNull('action_plan.deleted_at')
+        ->whereNull('project.deleted_at')
+        ->groupBy(
+            'action_plan_id',
+            'action_plan_number',
+            'name_ap',
+            'action_plan.budget',
+            'action_plan.spend_money',
+            'action_plan.status',
+            'id_strategic',
+            'action_plan.id_year',
+        )
+        ->orderBy('action_plan_number')
+        ->paginate($perPage)
+        ->withQueryString();
+        // $actionPlan = ActionPlan::where('id_strategic', $id)
+        //     ->orderBy('action_plan_number')
+        //     ->paginate($perPage)->withQueryString();
         return $actionPlan;
     }
 
@@ -82,5 +112,38 @@ class ActionplanService
         $strategic = ActionPlan::where('action_plan_id', $id)->firstOrFail();
         $strategic->delete();
         return $strategic;
+    }
+
+    public function store(ActionPlanDTO $actionPlanDTO)
+    {
+        $actionplanDB = new ActionPlan();
+
+        DB::transaction(function () use ($actionPlanDTO, $actionplanDB) {
+            // Project
+            $actionplanDB->action_plan_number = $actionPlanDTO->actionPlanNumber;
+            $actionplanDB->name_ap = $actionPlanDTO->nameAp;
+            $actionplanDB->id_strategic = $actionPlanDTO->idStrategic;
+            $actionplanDB->id_year = $actionPlanDTO->idYear;
+            $actionplanDB->budget = $actionPlanDTO->budget;
+            $actionplanDB->save();
+        });
+
+        return  $actionplanDB;
+    }
+    public function update(ActionPlanDTO $actionPlanDTO, $id)
+    {
+        return DB::transaction(function () use ($actionPlanDTO, $id) {
+            $actionplanDB = ActionPlan::where('action_plan_id', $id)->firstOrFail();
+
+            $actionplanDB->action_plan_number = $actionPlanDTO->actionPlanNumber;
+            $actionplanDB->name_ap = $actionPlanDTO->nameAp;
+            $actionplanDB->id_strategic = $actionPlanDTO->idStrategic;
+            $actionplanDB->id_year = $actionPlanDTO->idYear;
+            $actionplanDB->budget = $actionPlanDTO->budget;
+
+            $actionplanDB->save();
+
+            return $actionplanDB;
+        });
     }
 }

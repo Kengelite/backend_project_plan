@@ -3,28 +3,28 @@
 namespace App\Services\Admin\Manage;
 
 use App\Dto\ActivityDTO;
-use App\Models\Activity;
+use App\Models\Okr;
 use App\Trait\Utils;
 use App\Models\ActivityUser;
 use Illuminate\Support\Facades\Auth;
 
-class ActivityService
+class OkrService
 {
     use Utils;
-    public function getAll()
+    public function getAll($perPage)
     {
-        $activity = Activity::paginate(10)->withQueryString();
+        $activity = Okr::paginate($perPage)->withQueryString();
         return $activity;
     }
     public function getByID($id)
     {
-        $activity = Activity::findOrFail($id);
+        $activity = Okr::findOrFail($id);
         return $activity;
     }
 
     public function getByIDactivity($id)
     {
-        $activity = Activity::where('id_project',$id)
+        $activity = Okr::where('id_project',$id)
         ->where('status', 1)
         ->orderBy('id')
         ->paginate(10)
@@ -33,7 +33,7 @@ class ActivityService
     }
     public function getByIDactivityAdmin($id)
     {
-        $activity = Activity::where('id_project',$id)
+        $activity = Okr::where('id_project',$id)
         ->orderBy('id')
         ->paginate(10)
         ->withQueryString();
@@ -43,7 +43,7 @@ class ActivityService
     public function updateStatus($id)
     {
         // ดึงข้อมูลที่ต้องการอัปเดตจากฐานข้อมูล
-        $activity = Activity::where("activity_id", $id);
+        $activity = Okr::where("okr_id", $id);
 
         // สลับสถานะจาก 0 เป็น 1 หรือจาก 1 เป็น 0
         $updated = $activity->update([
@@ -73,8 +73,8 @@ class ActivityService
     public function getByIDYear($id, $perPage)
     {
 
-        $project = Activity::where('id_year', $id)
-            ->orderBy('activity_id')
+        $project = Okr::where('id_year', $id)
+            ->orderBy('okr_id')
             // ->with('strategic')
             ->paginate($perPage);
 
@@ -85,7 +85,7 @@ class ActivityService
         // $strategic = Strategic::findOrFail($id)->delete();
         // return $strategic;
 
-        $activity = Activity::where('activity_id', $id)->firstOrFail();
+        $activity = Okr::where('okr_id', $id)->firstOrFail();
         $activity->delete();
         return $activity;
     }

@@ -4,13 +4,25 @@ namespace App\Trait;
 
 use App\Dto\ActionPlanDTO;
 use App\Http\Requests\Admin\Manage\ProjectRequest;
-
+use App\Http\Requests\Admin\Manage\DepartmentRequest;
+use App\Http\Requests\Admin\Manage\TypeRequest;
+use App\Http\Requests\Admin\Manage\PrincipleRequest;
+use App\Http\Requests\Admin\Manage\PositionRequest;
+use App\Http\Requests\Admin\Manage\YearRequest;
+use App\Http\Requests\Admin\Manage\StrategicRequest;
+use App\Http\Requests\Admin\Manage\ActionplanRequest;
 use App\Dto\ObstacleDTO;
 use App\Dto\OkrDetailProjectDTO;
 use App\Dto\PrincipleDTO;
 use App\Dto\ProjectDTO;
+use App\Dto\DepartmentDTO;
 use App\Dto\ResultDTO;
+use App\Dto\TypeDTO;
 use App\Dto\StyleDetailDTO;
+use App\Dto\PositionDTO;
+use App\Dto\YearDTO;
+use App\Dto\StrategicDTO;
+use App\Models\Principle;
 
 trait Utils
 {
@@ -70,5 +82,74 @@ trait Utils
             $projectDTO->obstaclesDTO[] = $obstacleDTO;
         }
         return $projectDTO;
+    }
+
+    public function departmentRequestToDepertmentDTO(DepartmentRequest $request)
+    {
+        $departmentDTO = new DepartmentDTO();
+
+        $departmentDTO->nameDepartment = $request->input('departments_name');
+        return $departmentDTO;
+
+    }
+
+    public function typeRequestToTypeDTO(TypeRequest $request)
+    {
+        $typeDTO = new TypeDTO();
+
+        $typeDTO->nameStyle = $request->input('style_name');
+        return $typeDTO;
+
+    }
+
+    public function principleRequestToPrincipleDTO(PrincipleRequest $request)
+    {
+        $principleDTO = new PrincipleDTO();
+
+        $principleDTO->namePriciples = $request->input('principle_name');
+        return $principleDTO;
+
+    }
+
+    public function positionRequestToPositionDTO(PositionRequest $request)
+    {
+        $positionDTO = new PositionDTO();
+
+        $positionDTO->namePosition = $request->input('position_name');
+        return $positionDTO;
+
+    }
+    public function yearRequestToYearDTO(YearRequest $request)
+    {
+        $YearDTO = new YearDTO();
+
+        $YearDTO->nameYear = $request->input('year');
+        return $YearDTO;
+
+    }
+
+    public function strategicRequestToStrategicDTO(StrategicRequest $request)
+    {
+        $strategicDTO = new StrategicDTO();
+
+        $strategicDTO->numberStrategic = $request->input('strategic_number');
+        $strategicDTO->nameStrategic = $request->input('strategic_name');
+        $strategicDTO->idYear = $request->input('id_year');
+        $strategicDTO->budget = $request->input('budget');
+        return $strategicDTO;
+
+    }
+
+    public function actionplanRequestToActionplanDTO(ActionplanRequest $request)
+    {
+        $strategicDTO = new ActionPlanDTO();
+
+        $strategicDTO->actionPlanNumber = $request->input('action_plan_number');
+        $strategicDTO->nameAp = $request->input('name_ap');
+        $strategicDTO->idYear = $request->input('id_year');
+        $strategicDTO->idStrategic = $request->input('id_strategic');
+        $strategicDTO->budget = $request->input('budget');
+        return $strategicDTO;
+
     }
 }

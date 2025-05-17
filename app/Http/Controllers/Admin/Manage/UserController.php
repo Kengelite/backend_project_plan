@@ -3,19 +3,19 @@
 namespace App\Http\Controllers\Admin\Manage;
 
 use App\Http\Controllers\Controller;
-use App\Http\Resources\HTTPSuccessResponse;
-use App\Services\Admin\Manage\ActivityService;
 use Illuminate\Http\Request;
-
-class ActivityController extends Controller
+use App\Http\Resources\HTTPSuccessResponse;
+use App\Services\Admin\Manage\UserService;
+class UserController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(ActivityService $activityService)
+    public function index(UserService $userService,Request $request)
     {
         try {
-            $result = $activityService->getAll();
+            $perPage = $request->input('per_page', 10);
+            $result = $userService->getAll($perPage);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -30,31 +30,31 @@ class ActivityController extends Controller
         }
     }
 
-    public function activityByIdproject(ActivityService $activityService,Request $request)
-    {
-
-        try {
-            $id_project = $request->id_project;
-            $result = $activityService->getByIDactivity($id_project);
-            $res = new HTTPSuccessResponse(['data' => $result]);
-            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
-        } catch (\App\Exceptions\CustomException $e) {
-            return response()->json([
-                'message' => $e->getMessage(),
-                'errors' => $e->getErrorDetails()
-            ], $e->getStatusCode());
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => $e->getMessage()
-            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
-    }
-    public function activityByIdprojectAdmin(ActivityService $activityService,Request $request)
+    public function activityByIdproject(UserService $userService,Request $request)
     {
 
         try {
             $id_project = $request->id_project;
-            $result = $activityService->getByIDactivityAdmin($id_project);
+            $result = $userService->getByIDactivity($id_project);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    public function activityByIdprojectAdmin(UserService $userService,Request $request)
+    {
+
+        try {
+            $id_project = $request->id_project;
+            $result = $userService->getByIDactivityAdmin($id_project);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -70,10 +70,10 @@ class ActivityController extends Controller
     }
 
 
-    public function updatestatusActivity(ActivityService $activityService,Request $request){
+    public function updatestatusActivity(UserService $userService,Request $request){
         try {
             $activity_id = $request->activity_id;
-            $result = $activityService->updateStatus($activity_id);
+            $result = $userService->updateStatus($activity_id);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -88,10 +88,10 @@ class ActivityController extends Controller
         }
     }
 
-    public function getActivityUserYear(ActivityService $activityService,Request $request){
+    public function getActivityUserYear(UserService $userService,Request $request){
         try {
             $id_year = $request->id_year;
-            $result = $activityService->getByIDUser($id_year);
+            $result = $userService->getByIDUser($id_year);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -107,12 +107,12 @@ class ActivityController extends Controller
     }
 
 
-    public function getByIdYear(ActivityService $activityService,Request $request)
+    public function getByIdYear(UserService $userService,Request $request)
     {
         try {
             $id_year = $request->id_year;
             $perPage = $request->input('per_page', 10);
-            $result = $activityService->getByIDYear($id_year,$perPage);
+            $result = $userService->getByIDYear($id_year,$perPage);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -171,11 +171,11 @@ class ActivityController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(ActivityService $activityService, Request $request)
+    public function destroy(UserService $userService, Request $request)
     {
         try {
-            $id_activity = $request->id_activity;
-            $result = $activityService->delete($id_activity);
+            $id = $request->id;
+            $result = $userService->delete($id);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {

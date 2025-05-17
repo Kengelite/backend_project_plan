@@ -8,12 +8,14 @@ use App\Http\Resources\HTTPSuccessResponse;
 use App\Services\Admin\Manage\ActionplanService;
 use App\Trait\Utils;
 use App\Http\Requests\Admin\Manage\ActionplanRequest;
+use App\Http\Resources\HTTPCreatedResponse;
 
 class ActionplanController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
+    use Utils;
     public function index(ActionplanService $actionplanService)
     {
         try {
@@ -38,7 +40,8 @@ class ActionplanController extends Controller
 
         try {
             $id_strategic = $request->id_strategic;
-            $result = $actionplanService->getByIDstrategic($id_strategic);
+            $perPage = $request->input('per_page', 10);
+            $result = $actionplanService->getByIDstrategic($id_strategic, $perPage);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -74,12 +77,12 @@ class ActionplanController extends Controller
     }
 
 
-    public function getByIdYear(ActionplanService $actionplanService,Request $request)
+    public function getByIdYear(ActionplanService $actionplanService, Request $request)
     {
         try {
             $id_year = $request->id_year;
             $perPage = $request->input('per_page', 10);
-            $result = $actionplanService->getByIDYear($id_year,$perPage);
+            $result = $actionplanService->getByIDYear($id_year, $perPage);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -105,11 +108,25 @@ class ActionplanController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(ActionplanRequest $request)
+    public function store(ActionplanRequest $request, ActionplanService $actionplanService)
     {
-        //
+        try {
+            $studentCourseDTO = $this->actionplanRequestToActionplanDTO($request);
+            $result = $actionplanService->store($studentCourseDTO);
+            // $result = $request->department_name;
+            $res = new HTTPCreatedResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_CREATED);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
-
     /**
      * Display the specified resource.
      */
@@ -129,10 +146,26 @@ class ActionplanController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(ActionplanRequest $request, string $id)
+    public function update(ActionplanRequest $request, ActionplanService $actionplanService, string $id)
     {
-        //
+        try {
+            $studentCourseDTO = $this->actionplanRequestToActionplanDTO($request);
+            $result = $actionplanService->update($studentCourseDTO, $id);
+            // $result = $request->department_name;
+            $res = new HTTPCreatedResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_CREATED);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
+
 
     /**
      * Remove the specified resource from storage.
