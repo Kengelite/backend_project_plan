@@ -7,6 +7,7 @@ use App\Models\Activity;
 use App\Trait\Utils;
 use App\Models\ActivityUser;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ActivityService
 {
@@ -22,22 +23,88 @@ class ActivityService
         return $activity;
     }
 
-    public function getByIDactivity($id)
+    public function getByIDactivity($id, $perPage)
     {
-        $activity = Activity::where('id_project',$id)
-        ->where('status', 1)
-        ->orderBy('id')
-        ->paginate(10)
-        ->withQueryString();
+
+
+        $activity = Activity::where('id_project', $id)
+            ->where('status', 1)
+            ->orderBy('id')
+            ->paginate($perPage)
+            ->withQueryString();
         return $activity;
     }
-    public function getByIDactivityAdmin($id)
+    public function getByIDactivityAdmin($id, $perPage)
     {
-        $activity = Activity::where('id_project',$id)
-        ->orderBy('id')
-        ->paginate(10)
-        ->withQueryString();
-        return $activity;
+        // $activity = DB::table('activity')
+        // ->leftJoin('activity_detail', 'activity.activity_id', '=', 'activity_detail.id_activity')
+        // ->select(
+        //     'activity.activity_id',
+        //     'activity.id',
+        //     'activity.name_activity',
+        //     'activity.budget',
+        //     'activity.spend_money',
+        //     'activity.status_performance',
+        //     'activity.detail_performance',
+        //     'activity.report_submission_status',
+        //     'activity.agency',
+        //     'activity.id_department',
+        //     'activity.status',
+        //     'activity.detail_short',
+        //     'activity.id_project',
+        //     'activity.id_year',
+        //     'activity.status_report' ,
+        //     DB::raw('COUNT(DISTINCT activity_detail.activity_detail_id) as activity_detail_count')
+        // )
+        // ->whereNull('activity.deleted_at')
+        // ->whereNull('activity_detail.deleted_at')
+        // ->where('activity.id_project', $id)
+        // ->groupBy(
+        //     'activity.activity_id',
+        //     'activity.id',
+        //     'activity.name_activity',
+        //     'activity.budget',
+        //     'activity.spend_money',
+        //     'activity.status_performance',
+        //     'activity.detail_performance',
+        //     'activity.report_submission_status',
+        //     'activity.agency',
+        //     'activity.id_department',
+        //     'activity.status',
+        //     'activity.detail_short',
+        //     'activity.id_project',
+        //     'activity.id_year',
+        //     'activity.status_report'
+        // )
+        // ->orderBy('activity.id')
+        // ->paginate($perPage)
+        // ->withQueryString();
+
+        $activities = DB::table('activity')
+            ->whereNull('deleted_at')
+            ->where('id_project', $id)
+            ->orderBy('id')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        // นับจำนวน activity_detail ของแต่ละ activity แบบแยก
+
+        // •	getCollection() → ดึงเฉพาะ array ของผลลัพธ์จาก paginator
+        // •	transform(...) → ใช้เปลี่ยนค่าทุกแถวใน collection
+        $activities->getCollection()->transform(function ($activity) {
+            $activity->activity_detail_count = DB::table('activity_detail')
+                ->where('id_activity', $activity->activity_id)
+                ->whereNull('deleted_at')
+                ->count();
+
+            return $activity;
+        });
+
+        // $activity = Activity::where('id_project', $id)
+        //     ->orderBy('id')
+        //     ->paginate(10)
+        //     ->withQueryString();
+        return $activities;
     }
 
     public function updateStatus($id)
@@ -60,12 +127,12 @@ class ActivityService
         $userId = Auth::id();
 
         $activityUser = ActivityUser::where('id_user', $userId)
-        ->where('id_year', $id)
-        ->whereHas('activity', function ($query){
-            $query->where('status',1);
-        })
-        ->with('activity')
-        ->paginate(10);
+            ->where('id_year', $id)
+            ->whereHas('activity', function ($query) {
+                $query->where('status', 1);
+            })
+            ->with('activity')
+            ->paginate(10);
 
         return $activityUser;
     }

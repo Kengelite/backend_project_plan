@@ -30,12 +30,11 @@ class UserController extends Controller
         }
     }
 
-    public function activityByIdproject(UserService $userService,Request $request)
+    public function teacher(UserService $userService)
     {
 
         try {
-            $id_project = $request->id_project;
-            $result = $userService->getByIDactivity($id_project);
+            $result = $userService->getUserTeacher();
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -49,12 +48,11 @@ class UserController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    public function activityByIdprojectAdmin(UserService $userService,Request $request)
+    public function employee(UserService $userService)
     {
 
         try {
-            $id_project = $request->id_project;
-            $result = $userService->getByIDactivityAdmin($id_project);
+            $result = $userService->getUserEmployee();
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {

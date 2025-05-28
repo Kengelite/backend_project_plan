@@ -23,15 +23,14 @@ class PrincipleService
         return $principle;
     }
 
-    public function getByIDactivity($id)
+    public function getprinciple()
     {
-        $principle = Principle::where('id_project',$id)
-        ->where('status', 1)
-        ->orderBy('id')
-        ->paginate(10)
-        ->withQueryString();
+        $principle = Principle::where('status', 1)
+        ->orderBy('principle_id')
+        ->get();
         return $principle;
     }
+    
     public function getByIDactivityAdmin($id)
     {
         $principle = Principle::where('id_project',$id)

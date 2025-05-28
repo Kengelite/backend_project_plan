@@ -35,12 +35,11 @@ class PrincipleController extends Controller
         }
     }
 
-    public function activityByIdproject(PrincipleService $principleService, Request $request)
+    public function principleUser(PrincipleService $principleService)
     {
 
         try {
-            $id_project = $request->id_project;
-            $result = $principleService->getByIDactivity($id_project);
+            $result = $principleService->getprinciple();
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {

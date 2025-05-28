@@ -27,9 +27,8 @@ Route::group(['prefix' => '/v1'], function () {
         Route::delete('deleteyear', [YearController::class, 'destroy']);
 
 
-
-
         Route::resource('okrall', OkrController::class);
+        Route::post('okr', [OkrController::class, 'OkeUser']);
         Route::post('updatestatusokr', [OkrController::class, 'updatestatusOkr']);
         Route::delete('deleteokr', [OkrController::class, 'destroy']);
 
@@ -40,6 +39,7 @@ Route::group(['prefix' => '/v1'], function () {
 
 
         Route::resource('departmentall', DepartmentController::class);
+        Route::get('department', [DepartmentController::class, 'DepartmentUser']);
         Route::post('updatestatusdepartment', [DepartmentController::class, 'updatestatus']);
         Route::delete('deletedepartment', [DepartmentController::class, 'destroy']);
 
@@ -49,11 +49,14 @@ Route::group(['prefix' => '/v1'], function () {
 
 
         Route::resource('principleall', PrincipleController::class);
+        Route::get('principle', [PrincipleController::class, 'principleUser']);
         Route::post('updatestatusprinciple', [PrincipleController::class, 'updatestatusPrinciple']);
         Route::delete('deleteprinciple', [PrincipleController::class, 'destroy']);
 
 
         Route::resource('userall', UserController::class);
+        Route::get('userteacher', [UserController::class, 'teacher']);
+        Route::get('useremployee', [UserController::class, 'employee']);
         Route::delete('deleteuser', [UserController::class, 'destroy']);
 
 
@@ -100,6 +103,5 @@ Route::group(['prefix' => '/v1'], function () {
         Route::post('projectuserallbyiduseradmin', [ProjectUserController::class, 'getByIdUserYearAdmin']);
         Route::post('projectuserallbyiduser', [ProjectUserController::class, 'getByIdUser']);
         Route::post('projectuserallbyidyear', [ProjectUserController::class, 'getByIdYear']);
-
     });
 });

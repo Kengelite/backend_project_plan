@@ -22,21 +22,23 @@ class UserService
         return $user;
     }
 
-    public function getByIDactivity($id)
+    public function getUserTeacher()
     {
-        $user = User::where('id', $id)
-            ->where('status', 1)
+        $user = User::select('id', 'name', 'email', 'academic_position', 'id_position') // ระบุเฉพาะ field ที่ต้องการ
+            ->where('academic_position', '1')
+            ->with('position') // ดึง relation position ด้วย
             ->orderBy('id')
-            ->paginate(10)
-            ->withQueryString();
+            ->get();
+
         return $user;
     }
-    public function getByIDactivityAdmin($id)
+    public function getUserEmployee()
     {
-        $user = User::where('id', $id)
+        $user = User::select('id', 'name', 'email', 'academic_position', 'id_position') // ระบุเฉพาะ field ที่ต้องการ
+            ->where('academic_position', '2')
+            ->with('position')
             ->orderBy('id')
-            ->paginate(10)
-            ->withQueryString();
+            ->get();
         return $user;
     }
 

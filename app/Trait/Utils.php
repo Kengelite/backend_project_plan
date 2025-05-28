@@ -11,6 +11,7 @@ use App\Http\Requests\Admin\Manage\PositionRequest;
 use App\Http\Requests\Admin\Manage\YearRequest;
 use App\Http\Requests\Admin\Manage\StrategicRequest;
 use App\Http\Requests\Admin\Manage\ActionplanRequest;
+use App\Http\Requests\Admin\Manage\ActivitydetailRequest;
 use App\Dto\ObstacleDTO;
 use App\Dto\OkrDetailProjectDTO;
 use App\Dto\PrincipleDTO;
@@ -22,6 +23,8 @@ use App\Dto\StyleDetailDTO;
 use App\Dto\PositionDTO;
 use App\Dto\YearDTO;
 use App\Dto\StrategicDTO;
+use App\Dto\ActivityDetailDTO;
+
 use App\Models\Principle;
 
 trait Utils
@@ -150,6 +153,22 @@ trait Utils
         $strategicDTO->idStrategic = $request->input('id_strategic');
         $strategicDTO->budget = $request->input('budget');
         return $strategicDTO;
+
+    }
+
+    public function activityDetailRequestToActivityDetailDTO(ActivitydetailRequest $request)
+    {
+        $activityDetailDTO = new ActivityDetailDTO();
+
+        $activityDetailDTO->detail = $request->input('detail');
+        $activityDetailDTO->price = $request->input('price');
+        $activityDetailDTO->start_date = $request->input('start_date');
+        $activityDetailDTO->end_date = $request->input('end_date');
+        $activityDetailDTO->station = $request->input('station');
+        $activityDetailDTO->report_data = $request->input('report_data');
+        $activityDetailDTO->id_employee = $request->input('id_employee');
+        $activityDetailDTO->id_activity = $request->input('id_activity');
+        return $activityDetailDTO;
 
     }
 }

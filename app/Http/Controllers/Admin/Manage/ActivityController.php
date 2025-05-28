@@ -35,7 +35,8 @@ class ActivityController extends Controller
 
         try {
             $id_project = $request->id_project;
-            $result = $activityService->getByIDactivity($id_project);
+            $perPage = $request->input('per_page', 10);
+            $result = $activityService->getByIDactivity($id_project,$perPage);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -54,7 +55,8 @@ class ActivityController extends Controller
 
         try {
             $id_project = $request->id_project;
-            $result = $activityService->getByIDactivityAdmin($id_project);
+            $perPage = $request->input('per_page', 10);
+            $result = $activityService->getByIDactivityAdmin($id_project,$perPage);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {

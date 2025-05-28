@@ -26,13 +26,80 @@ class ProjectService
         $project = Project::findOrFail($id);
         return $project;
     }
-    public function getByIDactionplan($id)
+    public function getByIDactionplan($id, $perPage)
     {
-        $project = Project::where('id_action_plan', $id)
+        // $project = Project::where('id_action_plan', $id)
+        //     ->orderBy('project_number')
+        //     ->paginate($perPage)
+        //     ->withQueryString();
+
+        //         $activity = DB::table('project')
+        //             ->leftJoin('activity', 'project.project_id', '=', 'activity.id_project')
+        //             ->select(
+        //                 'project.project_id',
+        //                 'project.project_number',
+        //                 'project.project_name',
+        //                 'project.budget',
+        //                 'project.spend_money',
+        //                 'project.status_performance',
+        //                 'project.id_year',
+        //                 'project.status',
+        //                 'project.status_report',
+        //                 DB::raw('COUNT(DISTINCT activity.activity_id) as count_activity'),
+        //                 DB::raw("
+        //   COUNT(CASE
+        //     WHEN activity.status_report = 1
+        //     THEN 1
+        //     ELSE NULL
+        //   END) AS count_activity_report
+        // ")
+        //             )
+        //             ->whereNull('project.deleted_at')
+        //             ->whereNull('activity.deleted_at')
+        //             ->where('project.id_action_plan', $id)
+        //             ->groupBy(
+        //                 'project.project_id',
+        //                 'project.project_number',
+        //                 'project.project_name',
+        //                 'project.budget',
+        //                 'project.spend_money',
+        //                 'project.status',
+        //                 'project.status_performance',
+        //                 'project.id_year',
+        //                 'project.status_report',
+        //             )
+        //             ->orderBy('project.project_number')
+        //             ->paginate($perPage)
+        //             ->withQueryString();
+
+
+        $projects = DB::table('project')
+            ->whereNull('deleted_at')
+            ->where('id_action_plan', $id)
             ->orderBy('project_number')
-            ->paginate(10)
+            ->paginate($perPage)
             ->withQueryString();
-        return $project;
+
+
+        // คำว่า clone ใน PHP (รวมถึงใน Laravel/Query Builder) หมายถึง การสร้างสำเนา (copy) ของ object เพื่อให้สามารถใช้งานหรือแก้ไขแยกจากต้นฉบับได้ โดยไม่กระทบกัน
+        // เพิ่ม count_activity และ count_activity_report แบบแยก query
+        // ช้ .getCollection() ดึง Collection ที่อยู่ใน paginator ออกมา เพื่อวนทำงานกับแต่ละแถว
+        $projects->getCollection()->transform(function ($project) {
+            // A. เตรียม query ของ activity ที่เกี่ยวข้องกับ project นี้
+            $activitiesQuery = DB::table('activity')
+                ->where('id_project', $project->project_id)
+                ->whereNull('deleted_at');
+
+            // B. นับจำนวนทั้งหมดของ activity ที่ผูกกับ project นี้
+            $project->count_activity = (clone $activitiesQuery)->count();
+            // C. นับเฉพาะ activity ที่ status_report = 1 (รายงานแล้ว)
+            $project->count_activity_report = (clone $activitiesQuery)
+                ->where('status_report', 1)
+                ->count();
+
+            return $project;
+        });
+        return $projects;
     }
 
     public function updateStatus($id)

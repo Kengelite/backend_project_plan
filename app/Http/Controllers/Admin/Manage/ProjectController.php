@@ -39,7 +39,8 @@ class ProjectController extends Controller
 
         try {
             $id_actionplan = $request->id_actionplan;
-            $result = $projectService->getByIDactionplan($id_actionplan);
+            $perPage = $request->input('per_page', 10);
+            $result = $projectService->getByIDactionplan($id_actionplan, $perPage);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {

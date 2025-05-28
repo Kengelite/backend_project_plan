@@ -7,13 +7,72 @@ use App\Models\Okr;
 use App\Trait\Utils;
 use App\Models\ActivityUser;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class OkrService
 {
     use Utils;
-    public function getAll($perPage)
+    public function getAll($perPage, $year_id)
     {
-        $activity = Okr::paginate($perPage)->withQueryString();
+        // $activity = Okr::paginate($perPage)->withQueryString();
+        // $activity =
+
+        $activity = DB::table('okr')
+            ->leftJoin('detail_year_OKR', 'okr.okr_id', '=', 'detail_year_OKR.id_okr')
+            ->leftJoin('Unit', 'okr.id_unit', '=', 'Unit.unit_id')
+            ->select(
+                'okr.okr_id',
+                'okr.okr_number',
+                'okr.okr_name',
+                'okr.status_report',
+                'okr.goal',
+                'okr.result',
+                'okr.status',
+                'okr.report_data',
+
+                'okr.start_date',
+                'okr.end_date',
+                'okr.status_report',
+            )
+            ->whereNull('okr.deleted_at')
+            ->whereNull('detail_year_OKR.deleted_at')
+            ->where('detail_year_OKR.id_year', $year_id)
+            ->orderBy('okr.okr_number')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return $activity;
+    }
+
+    public function getAllUser($perPage, $year_id, $id_employee)
+    {
+        // $activity = Okr::paginate($perPage)->withQueryString();
+        // $activity =
+
+        $activity = DB::table('okr')
+            ->leftJoin('detail_year_OKR', 'okr.okr_id', '=', 'detail_year_OKR.id_okr')
+            ->leftJoin('Unit', 'okr.id_unit', '=', 'Unit.unit_id')
+            ->select(
+                'okr.okr_id',
+                'okr.okr_number',
+                'okr.okr_name',
+                'okr.status_report',
+                'okr.goal',
+                'okr.result',
+                'okr.status',
+                'okr.report_data',
+
+                'okr.start_date',
+                'okr.end_date',
+                'okr.status_report',
+            )
+            ->whereNull('okr.deleted_at')
+            ->whereNull('detail_year_OKR.deleted_at')
+            ->where('detail_year_OKR.id_year', $year_id)
+            ->orderBy('okr.okr_number')
+            ->paginate($perPage)
+            ->withQueryString();
+
         return $activity;
     }
     public function getByID($id)
@@ -22,21 +81,20 @@ class OkrService
         return $activity;
     }
 
-    public function getByIDactivity($id)
+    public function getOkrUse()
     {
-        $activity = Okr::where('id_project',$id)
-        ->where('status', 1)
-        ->orderBy('id')
-        ->paginate(10)
-        ->withQueryString();
+        $activity = Okr::where('status', 1)
+            ->orderBy('okr_id')
+            ->get();
         return $activity;
     }
+    
     public function getByIDactivityAdmin($id)
     {
-        $activity = Okr::where('id_project',$id)
-        ->orderBy('id')
-        ->paginate(10)
-        ->withQueryString();
+        $activity = Okr::where('id_project', $id)
+            ->orderBy('id')
+            ->paginate(10)
+            ->withQueryString();
         return $activity;
     }
 
@@ -60,12 +118,12 @@ class OkrService
         $userId = Auth::id();
 
         $activityUser = ActivityUser::where('id_user', $userId)
-        ->where('id_year', $id)
-        ->whereHas('activity', function ($query){
-            $query->where('status',1);
-        })
-        ->with('activity')
-        ->paginate(10);
+            ->where('id_year', $id)
+            ->whereHas('activity', function ($query) {
+                $query->where('status', 1);
+            })
+            ->with('activity')
+            ->paginate(10);
 
         return $activityUser;
     }

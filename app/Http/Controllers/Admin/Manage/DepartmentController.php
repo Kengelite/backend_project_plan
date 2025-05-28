@@ -37,12 +37,11 @@ class DepartmentController extends Controller
         }
     }
 
-    public function activityByIdproject(DepartmentService $departmentService, Request $request)
+    public function DepartmentUser(DepartmentService $departmentService)
     {
 
         try {
-            $id_project = $request->id_project;
-            $result = $departmentService->getByIDactivity($id_project);
+            $result = $departmentService->getDepartmentUser();
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -188,11 +187,11 @@ class DepartmentController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(DepartmentService $departmentService,DepartmentRequest $request, string $id)
+    public function update(DepartmentService $departmentService, DepartmentRequest $request, string $id)
     {
         try {
             $studentCourseDTO = $this->departmentRequestToDepertmentDTO($request);
-            $result = $departmentService->update($studentCourseDTO,$id);
+            $result = $departmentService->update($studentCourseDTO, $id);
             // $result = $request->department_name;
             $res = new HTTPCreatedResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_CREATED);

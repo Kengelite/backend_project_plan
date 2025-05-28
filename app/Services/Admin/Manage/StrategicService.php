@@ -5,6 +5,8 @@ namespace App\Services\Admin\Manage;
 use App\Dto\StrategicDTO;
 use App\Models\Strategic;
 use App\Models\Year;
+use App\Models\ActionPlan;
+use App\Models\Project;
 use App\Trait\Utils;
 use Illuminate\Support\Facades\DB;
 
@@ -40,18 +42,18 @@ class StrategicService
     {
 
         $strategic =
-        DB::table('strategic')
-        ->leftJoin('year','strategic.id_year','year.year_id')
-        ->select(
-        'strategic.strategic_id',
-        'strategic.strategic_name',
-        'strategic.strategic_number'
-        )
-        ->where('strategic.id_year', $id)
-        ->where('strategic.status', '1')
-        ->orderBy('strategic.strategic_number')
-        ->paginate(10)
-        ->withQueryString();
+            DB::table('strategic')
+            ->leftJoin('year', 'strategic.id_year', 'year.year_id')
+            ->select(
+                'strategic.strategic_id',
+                'strategic.strategic_name',
+                'strategic.strategic_number'
+            )
+            ->where('strategic.id_year', $id)
+            ->where('strategic.status', '1')
+            ->orderBy('strategic.strategic_number')
+            ->paginate(10)
+            ->withQueryString();
         // Strategic::where('id_year', $id)
         //     ->orderBy('id_year')
         //     ->paginate(10)
@@ -61,40 +63,60 @@ class StrategicService
     }
     public function getByYear($id)
     {
-        $strategics = DB::table('strategic')
-            ->leftJoin('action_plan', 'strategic.strategic_id', '=', 'action_plan.id_strategic')
-            ->leftJoin('project', 'action_plan.action_plan_id', '=', 'project.id_action_plan')
-            ->leftJoin('activity', 'project.project_id', '=', 'activity.id_project')
-            ->select(
-                'strategic.strategic_id',
-                'strategic.strategic_name',
-                'strategic.strategic_number',
-                'strategic.budget',
-                'strategic.spend_money',
-                'strategic.status',
-                'strategic.id_year',
-                DB::raw('COUNT(DISTINCT project.project_id) as projects_count'),
-                DB::raw('COUNT(DISTINCT action_plan.action_plan_id) as action_plan_count')
-            )
-            ->where('strategic.id_year', $id)
-            ->whereNull('strategic.deleted_at')
-            ->whereNull('action_plan.deleted_at')
-            ->whereNull('project.deleted_at')
-            ->whereNull('activity.deleted_at')
-            ->groupBy(
-                'strategic.strategic_id',
-                'strategic.strategic_name',
-                'strategic.strategic_number',
-                'strategic.budget',
-                'strategic.spend_money',
-                'strategic.status',
-                 'strategic.id_year'
+        // $strategics = DB::table('strategic')
+        //     ->leftJoin('action_plan', 'strategic.strategic_id', '=', 'action_plan.id_strategic')
+        //     ->leftJoin('project', 'action_plan.action_plan_id', '=', 'project.id_action_plan')
+        //     ->leftJoin('activity', 'project.project_id', '=', 'activity.id_project')
+        //     ->select(
+        //         'strategic.strategic_id',
+        //         'strategic.strategic_name',
+        //         'strategic.strategic_number',
+        //         'strategic.budget',
+        //         'strategic.spend_money',
+        //         'strategic.status',
+        //         'strategic.id_year',
+        //         DB::raw('COUNT(DISTINCT project.project_id) as projects_count'),
+        //         DB::raw('COUNT(DISTINCT action_plan.action_plan_id) as action_plan_count')
+        //     )
+        //     ->where('strategic.id_year', $id)
+        //     ->whereNull('strategic.deleted_at')
+        //     ->whereNull('action_plan.deleted_at')
+        //     ->whereNull('project.deleted_at')
+        //     ->whereNull('activity.deleted_at')
+        //     ->groupBy(
+        //         'strategic.strategic_id',
+        //         'strategic.strategic_name',
+        //         'strategic.strategic_number',
+        //         'strategic.budget',
+        //         'strategic.spend_money',
+        //         'strategic.status',
+        //          'strategic.id_year'
 
-            )
-            ->orderBy('strategic.strategic_number')
+        //     )
+        //     ->orderBy('strategic.strategic_number')
+        //     ->paginate(10)
+        //     ->withQueryString();
+
+        $strategics = Strategic::where('id_year', $id)
+            ->whereNull('deleted_at')
+            ->orderBy('strategic_number')
             ->paginate(10)
             ->withQueryString();
 
+        foreach ($strategics as $strategic) {
+            $strategic->action_plan_count = ActionPlan::where('id_strategic', $strategic->strategic_id)
+                ->whereNull('deleted_at')
+                ->count();
+
+            $strategic->projects_count = Project::whereIn('id_action_plan', function ($query) use ($strategic) {
+                $query->select('action_plan_id')
+                    ->from('action_plan')
+                    ->where('id_strategic', $strategic->strategic_id)
+                    ->whereNull('deleted_at');
+            })
+                ->whereNull('deleted_at')
+                ->count();
+        }
         return $strategics;
     }
     public function updateStatus($id)

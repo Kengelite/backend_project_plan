@@ -15,7 +15,8 @@ class OkrController extends Controller
     {
         try {
             $perPage = $request->input('per_page', 10);
-            $result = $okrService->getAll($perPage);
+            $year_id = $request->input('id_year');
+            $result = $okrService->getAll($perPage,$year_id);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -30,12 +31,11 @@ class OkrController extends Controller
         }
     }
 
-    public function activityByIdproject(OkrService $okrService,Request $request)
+    public function OkeUser(OkrService $okrService)
     {
 
         try {
-            $id_project = $request->id_project;
-            $result = $okrService->getByIDactivity($id_project);
+            $result = $okrService->getOkrUse();
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {

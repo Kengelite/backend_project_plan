@@ -24,13 +24,12 @@ class DepartmentService
         return $activity;
     }
 
-    public function getByIDactivity($id)
+    public function getDepartmentUser()
     {
-        $activity = Department::where('id_project', $id)
-            ->where('status', 1)
-            ->orderBy('id')
-            ->paginate(10)
-            ->withQueryString();
+        $activity = Department::where('status', 1)
+            ->orderBy('departments_name')
+            ->get();
+            // ->withQueryString();
         return $activity;
     }
     public function getByIDactivityAdmin($id)
