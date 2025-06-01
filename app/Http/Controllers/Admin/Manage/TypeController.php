@@ -36,12 +36,11 @@ class TypeController extends Controller
         }
     }
 
-    public function activityByIdproject(StyleService $styleService, Request $request)
+    public function styleUser(StyleService $styleService)
     {
 
         try {
-            $id_project = $request->id_project;
-            $result = $styleService->getByIDactivity($id_project);
+            $result = $styleService->getTypeuser();
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {

@@ -19,9 +19,10 @@ class UserAuthController extends Controller
             $fullname = $user->name;
             $role = $user->role;
             $userID = $user->id;
+            $urlImg = $user->url_img;
             $token = $user->createToken('my-app-token', [$role])->plainTextToken;
 
-            return response()->json(['token' => $token, 'fullname' => $fullname, 'id' => $userID, "role" => $role], 200);
+            return response()->json(['token' => $token, 'fullname' => $fullname, 'id' => $userID, "role" => $role,"img"=>$urlImg], 200);
         }
 
         return response()->json(['message' => 'Incorrect credentials'], 401);

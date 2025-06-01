@@ -18,7 +18,7 @@ class OkrService
         // $activity =
 
         $activity = DB::table('okr')
-            ->leftJoin('detail_year_OKR', 'okr.okr_id', '=', 'detail_year_OKR.id_okr')
+            // ->leftJoin('detail_year_OKR', 'okr.okr_id', '=', 'detail_year_OKR.id_okr')
             ->leftJoin('Unit', 'okr.id_unit', '=', 'Unit.unit_id')
             ->select(
                 'okr.okr_id',
@@ -29,14 +29,14 @@ class OkrService
                 'okr.result',
                 'okr.status',
                 'okr.report_data',
-
                 'okr.start_date',
                 'okr.end_date',
                 'okr.status_report',
+                'okr.id_unit',
             )
             ->whereNull('okr.deleted_at')
-            ->whereNull('detail_year_OKR.deleted_at')
-            ->where('detail_year_OKR.id_year', $year_id)
+            // ->whereNull('detail_year_OKR.deleted_at')
+            ->where('okr.id_year', $year_id)
             ->orderBy('okr.okr_number')
             ->paginate($perPage)
             ->withQueryString();
@@ -50,7 +50,7 @@ class OkrService
         // $activity =
 
         $activity = DB::table('okr')
-            ->leftJoin('detail_year_OKR', 'okr.okr_id', '=', 'detail_year_OKR.id_okr')
+            // ->leftJoin('detail_year_OKR', 'okr.okr_id', '=', 'detail_year_OKR.id_okr')
             ->leftJoin('Unit', 'okr.id_unit', '=', 'Unit.unit_id')
             ->select(
                 'okr.okr_id',
@@ -67,8 +67,8 @@ class OkrService
                 'okr.status_report',
             )
             ->whereNull('okr.deleted_at')
-            ->whereNull('detail_year_OKR.deleted_at')
-            ->where('detail_year_OKR.id_year', $year_id)
+            // ->whereNull('detail_year_OKR.deleted_at')
+            ->where('okr.id_year', $year_id)
             ->orderBy('okr.okr_number')
             ->paginate($perPage)
             ->withQueryString();
@@ -88,7 +88,7 @@ class OkrService
             ->get();
         return $activity;
     }
-    
+
     public function getByIDactivityAdmin($id)
     {
         $activity = Okr::where('id_project', $id)

@@ -24,14 +24,12 @@ class StyleService
         return $activity;
     }
 
-    public function getByIDactivity($id)
+    public function getTypeuser()
     {
-        $activity = Style::where('id_project',$id)
-        ->where('status', 1)
-        ->orderBy('id')
-        ->paginate(10)
-        ->withQueryString();
-        return $activity;
+        $data = Style::where('status', 1)
+        ->get();
+        // ->withQueryString();
+        return $data;
     }
     public function getByIDactivityAdmin($id)
     {
