@@ -11,6 +11,12 @@ class indicator extends Model
     protected $table = 'indicator';
     protected $primaryKey = 'indicator_id';
     protected $keyType = 'string';
+
+
+    const CREATED_AT = 'created_at';
+    const UPDATED_AT = 'updated_at';
+    const DELETED_AT = 'deleted_at';
+
     // public function ActivityUsers()
     // {
     //     return $this->hasMany(ActivityUser::class, 'activity_id');
@@ -26,4 +32,16 @@ class indicator extends Model
             }
         });
     }
+
+     protected $fillable = [
+        'indicator_id',
+        'indicator_name',
+        'goal',
+        'id_project',
+        'id_unit',
+
+        'created_at',
+        'updated_at',
+        'deleted_at',
+    ];
 }

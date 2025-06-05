@@ -9,6 +9,7 @@ use App\Models\OkrDetailProject;
 use App\Models\Principle;
 use App\Models\Project;
 use App\Models\Result;
+use App\Models\StyleActivtiyDetail;
 use App\Models\StyleDetail;
 use App\Trait\Utils;
 use Illuminate\Support\Facades\DB;
@@ -152,6 +153,11 @@ class ProjectService
             $projectDB->OKR_id = "";
             $projectDB->detail_short = "";
             $projectDB->spend_money = 0;
+
+            $projectDB->id_department = $projectDTO->idDepartment;
+            $projectDB->result = $projectDTO->result;
+            $projectDB->id_year = $projectDTO->idYear;
+            $projectDB->obstacle = $projectDTO->obstacle;
             $projectDB->save();
 
             // Style Detail
@@ -182,24 +188,34 @@ class ProjectService
                 $principleDB->save();
             }
 
-            // Result
-            $resultsDTO = $projectDTO->resultsDTO;
-            foreach ($resultsDTO as $key => $value) {
-                $resultDB = new Result();
-                $resultDB->name_result = $value->nameResult;
-                $resultDB->id_project = $projectDB->project_id;
-                $resultDB->status = 0;
-                $resultDB->save();
+            // Principle
+            $styleActivtiyDetailsDTO = $projectDTO->styleActivtiyDetailsDTO;
+            foreach ($styleActivtiyDetailsDTO as $key => $value) {
+                $styleActivtiyDetailDB = new StyleActivtiyDetail();
+                $styleActivtiyDetailDB->id_style = $value->idStyle;
+                $styleActivtiyDetailDB->id_activity = ""; //TODO ไม่มี id activity
+                $styleActivtiyDetailDB->save();
             }
 
+
+            // Result
+            // $resultsDTO = $projectDTO->resultsDTO;
+            // foreach ($resultsDTO as $key => $value) {
+            //     $resultDB = new Result();
+            //     $resultDB->name_result = $value->nameResult;
+            //     $resultDB->id_project = $projectDB->project_id;
+            //     $resultDB->status = 0;
+            //     $resultDB->save();
+            // }
+
             // Obstacle
-            $obstaclesDTO = $projectDTO->obstaclesDTO;
-            foreach ($obstaclesDTO as $key => $value) {
-                $obstacleDB = new Obstacle();
-                $obstacleDB->name_obstacle = $value->nameObstacle;
-                $obstacleDB->status = 0;
-                $obstacleDB->save();
-            }
+            // $obstaclesDTO = $projectDTO->obstaclesDTO;
+            // foreach ($obstaclesDTO as $key => $value) {
+            //     $obstacleDB = new Obstacle();
+            //     $obstacleDB->name_obstacle = $value->nameObstacle;
+            //     $obstacleDB->status = 0;
+            //     $obstacleDB->save();
+            // }
         });
 
         return  $projectDB;

@@ -21,6 +21,12 @@ class ProjectDTO
     public string $OKRID;
     public string $projectDetailID;
 
+    public string $idDepartment;
+    public string $result;
+    public string $idYear;
+    public string $obstacle;
+    public array $projectPrinciples;
+
     /** @var StyleDetailDTO|null */
     public ?StyleDetailDTO $styleDetailDTO;
 
@@ -53,4 +59,19 @@ class ProjectDTO
 
     /** @var ActionPlanDTO|null */
     public ?ActionPlanDTO $actionPlanDTO;
+
+    /** @var StyleActivtiyDetailDTO[]|null */
+    public array $styleActivtiyDetailsDTO;
+
+    /** @var ObjectiveDTO[]|null */
+    public array $ObjectivesDTO;
+
+    /** @var EmployeeDTO[]|null */
+    public array $employeesDTO;
+
+    /** @var TeacherDTO[]|null */
+    public array $teachersDTO;
+
+     /** @var IndicatorDTO[]|null */
+    public array $indicatorsDTO;
 }

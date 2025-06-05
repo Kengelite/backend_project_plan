@@ -24,7 +24,7 @@ use App\Dto\PositionDTO;
 use App\Dto\YearDTO;
 use App\Dto\StrategicDTO;
 use App\Dto\ActivityDetailDTO;
-
+use App\Dto\StyleActivtiyDetailDTO;
 use App\Models\Principle;
 
 trait Utils
@@ -39,6 +39,12 @@ trait Utils
         $projectDTO->timeStart = $request->input('time_start');
         $projectDTO->timeEnd = $request->input('time_end');
         $projectDTO->location = $request->input('location');
+
+        $projectDTO->idDepartment = $request->input('id_department');
+        $projectDTO->result = $request->input('result');
+        $projectDTO->idYear = $request->input('id_year');
+        $projectDTO->obstacle = $request->input('obstacle');
+
 
         // Action plan
         $actionPlanDTO = new ActionPlanDTO();
@@ -69,21 +75,30 @@ trait Utils
             $projectDTO->principlesDTO[] = $principleDTO;
         }
 
-        // Result
-        $results = $request->input('result');
-        foreach ($results as $key => $value) {
-            $resultDTO = new ResultDTO();
-            $resultDTO->nameResult = $value;
-            $projectDTO->resultsDTO[] = $resultDTO;
+
+        // Principles
+        $styleActivtiyDetail = $request->input('style_activtiy_detail');
+        foreach ($styleActivtiyDetail as $key => $value) {
+            $styleActivtiyDetailDTO = new StyleActivtiyDetailDTO();
+            $styleActivtiyDetailDTO->idStyle = $value;
+            $projectDTO->styleActivtiyDetailsDTO[] = $styleActivtiyDetailDTO;
         }
 
-        // Obstacle
-        $obstacles = $request->input('obstacle');
-        foreach ($obstacles as $key => $value) {
-            $obstacleDTO = new ObstacleDTO();
-            $obstacleDTO->nameObstacle = $value;
-            $projectDTO->obstaclesDTO[] = $obstacleDTO;
-        }
+        // // Result
+        // $results = $request->input('result');
+        // foreach ($results as $key => $value) {
+        //     $resultDTO = new ResultDTO();
+        //     $resultDTO->nameResult = $value;
+        //     $projectDTO->resultsDTO[] = $resultDTO;
+        // }
+
+        // // Obstacle
+        // $obstacles = $request->input('obstacle');
+        // foreach ($obstacles as $key => $value) {
+        //     $obstacleDTO = new ObstacleDTO();
+        //     $obstacleDTO->nameObstacle = $value;
+        //     $projectDTO->obstaclesDTO[] = $obstacleDTO;
+        // }
         return $projectDTO;
     }
 

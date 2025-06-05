@@ -66,6 +66,11 @@ class Project extends Model
         'OKR_id',
         'id_action_plan',
         'project_detail_id',
+
+        'id_department',
+        'result',
+        'id_year',
+        'obstacle',
     ];
 
     protected static function boot()

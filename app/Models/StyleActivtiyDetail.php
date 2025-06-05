@@ -5,18 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ProjectUser extends Model
+class StyleActivtiyDetail extends Model
 {
     use SoftDeletes;
-    //
-    protected $table = 'Project_user';
+
+    protected $table = 'style_activtiy_detail';
 
     /**
      * The primary key associated with the table.
      *
      * @var string
      */
-    protected $primaryKey = 'id_project_user';
+    protected $primaryKey = 'style_detail_activity_id';
 
     /**
      * Indicates if the model's ID is auto-incrementing.
@@ -42,20 +42,10 @@ class ProjectUser extends Model
     const UPDATED_AT = 'updated_at';
     const DELETED_AT = 'deleted_at';
 
-    public function project()
-    {
-        return $this->belongsTo(Project::class, 'id_project'); // โดยที่ project_id คือ key ที่เชื่อมกัน
-    }
-
     protected $fillable = [
-        'id_project_user',
-        'type',
-        'main',
-        'status',
-        'id_user',
-        'id_project',
-        'id_year',
-
+        'style_detail_activity_id',
+        'id_activity',
+        'id_style',
         'created_at',
         'updated_at',
         'deleted_at',
