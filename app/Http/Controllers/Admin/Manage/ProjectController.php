@@ -111,6 +111,7 @@ class ProjectController extends Controller
     {
         try {
             $studentCourseDTO = $this->projectRequestToProjectDTO($request);
+            // dd($studentCourseDTO);
             $result = $projectService->store($studentCourseDTO);
             $res = new HTTPCreatedResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_CREATED);

@@ -4,10 +4,14 @@ namespace App\Services\Admin\Manage;
 
 use App\Dto\ProjectDTO;
 use App\Models\ActionPlan;
+use App\Models\indicator;
+use App\Models\Objective;
 use App\Models\Obstacle;
 use App\Models\OkrDetailProject;
 use App\Models\Principle;
 use App\Models\Project;
+use App\Models\ProjectPrinciple;
+use App\Models\ProjectUser;
 use App\Models\Result;
 use App\Models\StyleActivtiyDetail;
 use App\Models\StyleDetail;
@@ -148,9 +152,9 @@ class ProjectService
             $projectDB->time_start = $projectDTO->timeStart;
             $projectDB->time_end = $projectDTO->timeEnd;
             $projectDB->location = $projectDTO->location;
-            $projectDB->id_action_plan = $actionPlanDTO->actionPlanID;
-            $projectDB->project_detail_id = "";
-            $projectDB->OKR_id = "";
+            // $projectDB->id_action_plan = $actionPlanDTO->actionPlanID;
+            // $projectDB->project_detail_id = "";
+            // $projectDB->OKR_id = "";
             $projectDB->detail_short = "";
             $projectDB->spend_money = 0;
 
@@ -182,19 +186,71 @@ class ProjectService
             $principlesDTO = $projectDTO->principlesDTO;
             foreach ($principlesDTO as $key => $value) {
                 $principleDB = new Principle();
-                $principleDB->id_project = $projectDB->project_id;
-                $principleDB->name_priciples = $value->namePriciples;
+                // $principleDB->id_project = $projectDB->project_id;
+                $principleDB->priciple_name = $value->namePriciples;
                 $principleDB->status = 0;
                 $principleDB->save();
             }
 
-            // Principle
+            // Style Activtiy Detail
             $styleActivtiyDetailsDTO = $projectDTO->styleActivtiyDetailsDTO;
             foreach ($styleActivtiyDetailsDTO as $key => $value) {
                 $styleActivtiyDetailDB = new StyleActivtiyDetail();
                 $styleActivtiyDetailDB->id_style = $value->idStyle;
                 $styleActivtiyDetailDB->id_activity = ""; //TODO ไม่มี id activity
                 $styleActivtiyDetailDB->save();
+            }
+
+            // Objective
+            $objectivesDTO = $projectDTO->ObjectivesDTO;
+            foreach ($objectivesDTO as $key => $value) {
+                $objectiveDB = new Objective();
+                $objectiveDB->objective_name = $value->objectiveName;
+                $objectiveDB->id_project = $projectDB->project_id;
+                $objectiveDB->save();
+            }
+
+            // Employee
+            $employeesDTO = $projectDTO->employeesDTO;
+            foreach ($employeesDTO as $key => $value) {
+                $projectUserDB = new ProjectUser();
+                $projectUserDB->type = $value->type;
+                $projectUserDB->main = $value->main;
+                $projectUserDB->status = $value->status;
+                $projectUserDB->id_user = $value->idUser;
+                $projectUserDB->id_project = $projectDB->project_id;
+                $projectUserDB->id_year = $value->idYear ?? 0;
+                $projectUserDB->save();
+            }
+
+            // Teacher
+            $teachersDTO = $projectDTO->teachersDTO;
+            foreach ($teachersDTO as $key => $value) {
+                $projectUserDB = new ProjectUser();
+                $projectUserDB->type = $value->type;
+                $projectUserDB->main = $value->main;
+                $projectUserDB->status = $value->status;
+                $projectUserDB->id_user = $value->idUser;
+                $projectUserDB->id_project = $projectDB->project_id;
+                $projectUserDB->id_year = $value->idYear ?? 0;
+                $projectUserDB->save();
+            }
+
+            // Project Principle
+            $projectPrinciples = $projectDTO->projectPrinciples;
+            foreach ($projectPrinciples as $key => $value) {
+                $projectPrincipleDB = new ProjectPrinciple();
+                $projectPrincipleDB->id_principle =  $value; //TODO เดี้ยวมาเช็คใหม่
+            }
+
+            // Indicator
+            $indicatorsDTO = $projectDTO->indicatorsDTO;
+            foreach ($indicatorsDTO as $key => $value) {
+                $indicatorDB = new indicator();
+                $indicatorDB->indicator_name =  $value->indicatorName;
+                $indicatorDB->goal =  $value->goal;
+                $indicatorDB->id_project = $projectDB->project_id;
+                $indicatorDB->id_unit =  $value->idUnit;
             }
 
 

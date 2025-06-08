@@ -39,11 +39,13 @@ class ProjectRequest extends FormRequest
             'principles' => 'required|array',
             'principles.*' => 'string|max:255',
 
-            'result' => 'required|array',
-            'result.*' => 'string|max:255',
+            // 'result' => 'required|array',
+            // 'result.*' => 'string|max:255',
+            'result' => 'required',
 
-            'obstacle' => 'required|array',
-            'obstacle.*' => 'string|max:255',
+            'obstacle' => 'required',
+            // 'obstacle' => 'required',
+            // 'obstacle.*' => 'string|max:255',
         ];
     }
 

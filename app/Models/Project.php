@@ -63,9 +63,9 @@ class Project extends Model
         'time_start',
         'time_end',
         'location',
-        'OKR_id',
-        'id_action_plan',
-        'project_detail_id',
+        // 'OKR_id',
+        // 'id_action_plan',
+        // 'project_detail_id',
 
         'id_department',
         'result',

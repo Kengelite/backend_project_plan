@@ -24,7 +24,11 @@ use App\Dto\PositionDTO;
 use App\Dto\YearDTO;
 use App\Dto\StrategicDTO;
 use App\Dto\ActivityDetailDTO;
+use App\Dto\EmployeeDTO;
+use App\Dto\IndicatorDTO;
+use App\Dto\ObjectiveDTO;
 use App\Dto\StyleActivtiyDetailDTO;
+use App\Dto\TeacherDTO;
 use App\Models\Principle;
 
 trait Utils
@@ -44,12 +48,64 @@ trait Utils
         $projectDTO->result = $request->input('result');
         $projectDTO->idYear = $request->input('id_year');
         $projectDTO->obstacle = $request->input('obstacle');
+        $projectDTO->budget =  $request->input('budget');
 
 
         // Action plan
         $actionPlanDTO = new ActionPlanDTO();
         $actionPlanDTO->actionPlanID = $request->input('id_actionplan');
         $projectDTO->actionPlanDTO = $actionPlanDTO;
+
+
+        // project principle
+        $projectPrinciples = $request->input('project_principle');
+        $projectDTO->projectPrinciples =  $projectPrinciples;
+
+        // indicator
+        $indicators = $request->input('indicator');
+        foreach ($indicators as $key => $value) {
+            $indicatorDTO = new IndicatorDTO();
+            $indicatorDTO->indicatorName = $value['indicator_name'];
+            $indicatorDTO->idUnit = $value['unit_name']['value'];
+            $indicatorDTO->goal = $value['goal'];
+            $projectDTO->indicatorsDTO[] = $indicatorDTO;
+        }
+
+        // style activtiy details
+        $objectives = $request->input('objective');
+        foreach ($objectives as $key => $value) {
+            $objectiveDTO = new ObjectiveDTO();
+            $objectiveDTO->objectiveName = $value['name'];
+            $projectDTO->ObjectivesDTO[] = $objectiveDTO;
+        }
+
+        // employee
+        $employees = $request->input('employee');
+        foreach ($employees as $key => $value) {
+            $employeeDTO = new EmployeeDTO();
+            $employeeDTO->idUser = $value['id'];
+            $employeeDTO->type = 1;
+            if ($key == 0) {
+                $employeeDTO->main = 1;
+            } else {
+                $employeeDTO->main = 0;
+            }
+            $projectDTO->employeesDTO[] = $employeeDTO;
+        }
+
+        // teacher
+        $teachers = $request->input('teacher');
+        foreach ($teachers as $key => $value) {
+            $teacherDTO = new TeacherDTO();
+            $teacherDTO->idUser = $value['id'];
+            $teacherDTO->type = 2;
+            if ($key == 0) {
+                $teacherDTO->main = 1;
+            } else {
+                $teacherDTO->main = 0;
+            }
+            $projectDTO->teachersDTO[] = $teacherDTO;
+        }
 
         // Style Details
         $styleDetails = $request->input('style_detail');
@@ -108,7 +164,6 @@ trait Utils
 
         $departmentDTO->nameDepartment = $request->input('departments_name');
         return $departmentDTO;
-
     }
 
     public function typeRequestToTypeDTO(TypeRequest $request)
@@ -117,7 +172,6 @@ trait Utils
 
         $typeDTO->nameStyle = $request->input('style_name');
         return $typeDTO;
-
     }
 
     public function principleRequestToPrincipleDTO(PrincipleRequest $request)
@@ -126,7 +180,6 @@ trait Utils
 
         $principleDTO->namePriciples = $request->input('principle_name');
         return $principleDTO;
-
     }
 
     public function positionRequestToPositionDTO(PositionRequest $request)
@@ -135,7 +188,6 @@ trait Utils
 
         $positionDTO->namePosition = $request->input('position_name');
         return $positionDTO;
-
     }
     public function yearRequestToYearDTO(YearRequest $request)
     {
@@ -143,7 +195,6 @@ trait Utils
 
         $YearDTO->nameYear = $request->input('year');
         return $YearDTO;
-
     }
 
     public function strategicRequestToStrategicDTO(StrategicRequest $request)
@@ -155,7 +206,6 @@ trait Utils
         $strategicDTO->idYear = $request->input('id_year');
         $strategicDTO->budget = $request->input('budget');
         return $strategicDTO;
-
     }
 
     public function actionplanRequestToActionplanDTO(ActionplanRequest $request)
@@ -168,7 +218,6 @@ trait Utils
         $strategicDTO->idStrategic = $request->input('id_strategic');
         $strategicDTO->budget = $request->input('budget');
         return $strategicDTO;
-
     }
 
     public function activityDetailRequestToActivityDetailDTO(ActivitydetailRequest $request)
@@ -184,6 +233,5 @@ trait Utils
         $activityDetailDTO->id_employee = $request->input('id_employee');
         $activityDetailDTO->id_activity = $request->input('id_activity');
         return $activityDetailDTO;
-
     }
 }
