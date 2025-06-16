@@ -14,9 +14,11 @@ use App\Http\Controllers\Admin\Manage\TypeController;
 use App\Http\Controllers\Admin\Manage\DepartmentController;
 use App\Http\Controllers\Admin\Manage\PositionController;
 use App\Http\Controllers\Admin\Manage\UnitController;
+use App\Http\Controllers\Admin\Manage\EmailController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-
+use Illuminate\Support\Facades\Mail;
+use App\Mail\TestMail;
 
 Route::group(['prefix' => '/v1'], function () {
     // Route::group( 'prefix' => '/admin'], function () {
@@ -109,5 +111,7 @@ Route::group(['prefix' => '/v1'], function () {
 
         Route::resource('unitall', UnitController::class);
         Route::get('unit', [UnitController::class, 'user']);
+
+        Route::get('/send-mail/{id}/{type}',[EmailController::class,'sendEmail']);
     });
 });

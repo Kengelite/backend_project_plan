@@ -7,6 +7,7 @@ use App\Models\ProjectUser;
 use App\Models\Project;
 use App\Models\Year;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class ProjectUserService
 {
@@ -32,7 +33,7 @@ class ProjectUserService
 
         return $projectUsers;
     }
-    public function getByIDYear($id)
+    public function getByIDYear($id, $perPage)
     {
         $userId = Auth::id();
 
@@ -42,8 +43,28 @@ class ProjectUserService
                 $query->where('status', 1); // กรองจาก status ของ project
             })
             ->with('project') // โหลดข้อมูล project ที่เชื่อมกับ project_user
-            ->paginate(10);
+            ->paginate($perPage);
 
+        $projectUsers->getCollection()->transform(function ($projectUser) {
+            // A. ดึง project ที่โหลดมาจาก with('project')
+            $project = $projectUser->project;
+
+            if ($project) {
+                $activitiesQuery = DB::table('activity')
+                    ->where('id_project', $project->id) // ใช้ $project->id แทน $projectUser->project_id
+                    ->whereNull('deleted_at');
+
+                // B. นับจำนวน activity ทั้งหมด
+                $project->count_activity = (clone $activitiesQuery)->count();
+
+                // C. นับเฉพาะที่รายงานแล้ว
+                $project->count_activity_report = (clone $activitiesQuery)
+                    ->where('status_report', 1)
+                    ->count();
+            }
+
+            return $projectUser;
+        });
         return $projectUsers;
     }
     public function getByIDYearAdmin($id)

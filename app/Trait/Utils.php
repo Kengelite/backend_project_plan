@@ -38,7 +38,7 @@ trait Utils
         $projectDTO = new ProjectDTO();
 
         $projectDTO->projectName = $request->input('project_name');
-        $projectDTO->agency = $request->input('agency');
+        // $projectDTO->agency = $request->input('agency');
         $projectDTO->abstract = $request->input('abstract');
         $projectDTO->timeStart = $request->input('time_start');
         $projectDTO->timeEnd = $request->input('time_end');
@@ -49,6 +49,7 @@ trait Utils
         $projectDTO->idYear = $request->input('id_year');
         $projectDTO->obstacle = $request->input('obstacle');
         $projectDTO->budget =  $request->input('budget');
+        $projectDTO->projectNumber =  $request->input('project_number');
 
 
         // Action plan
@@ -58,8 +59,8 @@ trait Utils
 
 
         // project principle
-        $projectPrinciples = $request->input('project_principle');
-        $projectDTO->projectPrinciples =  $projectPrinciples;
+        // $projectPrinciples = $request->input('project_principle');
+        // $projectDTO->projectPrinciples =  $projectPrinciples;
 
         // indicator
         $indicators = $request->input('indicator');
@@ -116,15 +117,14 @@ trait Utils
         }
 
         // Okr detail project
-        $okrDetailProjects = $request->input('okr_detail_project');
-        foreach ($okrDetailProjects as $key => $value) {
+        $okrDetailProjects = $request->input('okr_detail_project', []);
+        foreach ($okrDetailProjects as $item) {
             $okrDetailProjectDTO = new OkrDetailProjectDTO();
-            $okrDetailProjectDTO->idOkr = $value;
+            $okrDetailProjectDTO->idOkr = $item['id']; // ใช้เฉพาะ id
             $projectDTO->okrDetailProjectsDTO[] = $okrDetailProjectDTO;
         }
-
         // Principles
-        $principles = $request->input('principles');
+        $principles = $request->input('project_principle', []);
         foreach ($principles as $key => $value) {
             $principleDTO = new PrincipleDTO();
             $principleDTO->namePriciples = $value;
@@ -133,7 +133,7 @@ trait Utils
 
 
         // Principles
-        $styleActivtiyDetail = $request->input('style_activtiy_detail');
+        $styleActivtiyDetail = $request->input('style_detail', []);
         foreach ($styleActivtiyDetail as $key => $value) {
             $styleActivtiyDetailDTO = new StyleActivtiyDetailDTO();
             $styleActivtiyDetailDTO->idStyle = $value;

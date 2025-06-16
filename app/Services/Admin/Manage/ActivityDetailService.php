@@ -31,12 +31,12 @@ class ActivityDetailService
             ->paginate($perPage)->withQueryString();
         return $activityDetail;
     }
-    public function getByIDactivity($id)
+    public function getByIDactivity($id,$perPage)
     {
         $activityDetail = ActivityDetail::where('id_activity', $id)
-            ->where('status', '=', '1')
+            // ->where('status', '=', '1')
             ->orderBy('activity_detail_id')
-            ->paginate(10)->withQueryString();
+            ->paginate($perPage)->withQueryString();
         return $activityDetail;
     }
 

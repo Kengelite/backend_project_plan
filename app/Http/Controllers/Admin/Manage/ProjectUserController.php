@@ -43,11 +43,12 @@ class ProjectUserController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    public function getByIdYear(ProjectUserService $projectUserService,Request $request)
+    public function getByIdYear(ProjectUserService $projectUserService, Request $request)
     {
         try {
             $id_year = $request->id_year;
-            $result = $projectUserService->getByIDYear($id_year);
+            $perPage = $request->input('per_page', 10);
+            $result = $projectUserService->getByIDYear($id_year,$perPage);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -61,7 +62,7 @@ class ProjectUserController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    public function getByIdUserYearAdmin(ProjectUserService $projectUserService,Request $request)
+    public function getByIdUserYearAdmin(ProjectUserService $projectUserService, Request $request)
     {
         try {
             $id_year = $request->id_year;
@@ -79,5 +80,4 @@ class ProjectUserController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
 }

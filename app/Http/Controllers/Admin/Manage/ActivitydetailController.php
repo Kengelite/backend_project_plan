@@ -34,12 +34,13 @@ class ActivitydetailController extends Controller
         }
     }
 
-    public function activitydetailByIdactivity(ActivityDetailService $activitydetailService,Request $request)
+    public function activitydetailByIdactivity(ActivityDetailService $activitydetailService, Request $request)
     {
 
         try {
             $id_activity = $request->id_activity;
-            $result = $activitydetailService->getByIDactivity($id_activity);
+            $perPage = $request->input('per_page', 10);
+            $result = $activitydetailService->getByIDactivity($id_activity,$perPage );
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -54,7 +55,7 @@ class ActivitydetailController extends Controller
         }
     }
 
-    public function activitydetailByIdactivityAdmin(ActivityDetailService $activitydetailService,Request $request)
+    public function activitydetailByIdactivityAdmin(ActivityDetailService $activitydetailService, Request $request)
     {
 
         try {
@@ -74,7 +75,7 @@ class ActivitydetailController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    public function updatestatusActivityDetail(ActivityDetailService $activitydetailService,Request $request)
+    public function updatestatusActivityDetail(ActivityDetailService $activitydetailService, Request $request)
     {
 
         try {
@@ -152,5 +153,4 @@ class ActivitydetailController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
 }

@@ -47,6 +47,11 @@ class ProjectUser extends Model
         return $this->belongsTo(Project::class, 'id_project'); // โดยที่ project_id คือ key ที่เชื่อมกัน
     }
 
+    // app/Models/ProjectUser.php
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'id_user');
+    }
     protected $fillable = [
         'id_project_user',
         'type',

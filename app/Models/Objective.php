@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Objective extends Model
 {
-   use SoftDeletes;
+    use SoftDeletes;
 
     protected $table = 'objective';
 
@@ -50,4 +50,9 @@ class Objective extends Model
         'updated_at',
         'deleted_at',
     ];
+
+    public function objective()
+    {
+        return $this->belongsTo(Project::class, 'project_id'); // โดยที่ project_id คือ key ที่เชื่อมกัน
+    }
 }

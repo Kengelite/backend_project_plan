@@ -23,6 +23,24 @@ class ActivityService
         return $activity;
     }
 
+    public function updateSendEmailByID($id)
+    {
+        $activity = Activity::findOrFail($id);
+        $activity->count_send_email = ($activity->count_send_email ?? 0) + 1;
+        $activity->save();
+        return $activity;
+    }
+
+    public function getUserByIDActivity($id)
+    {
+        $activity = ActivityUser::with('user')
+            ->where('id_activity', $id)
+            ->get();
+
+        return $activity;
+    }
+
+
     public function getByIDactivity($id, $perPage)
     {
 
@@ -122,7 +140,7 @@ class ActivityService
         return $activity;
     }
 
-    public function getByIDUser($id)
+    public function getByIDUser($id, $perPage)
     {
         $userId = Auth::id();
 
@@ -132,12 +150,23 @@ class ActivityService
                 $query->where('status', 1);
             })
             ->with('activity')
-            ->paginate(10);
+            ->paginate($perPage);
 
         return $activityUser;
     }
 
     public function getByIDYear($id, $perPage)
+    {
+
+        $project = Activity::where('id_year', $id)
+            ->orderBy('activity_id')
+            // ->with('strategic')
+            ->paginate($perPage);
+
+        return $project;
+    }
+
+    public function sendEmail($id, $perPage)
     {
 
         $project = Activity::where('id_year', $id)

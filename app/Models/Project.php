@@ -45,8 +45,35 @@ class Project extends Model
 
     public function projectUsers()
     {
-        return $this->hasMany(ProjectUser::class, 'project_id');
+        return $this->hasMany(ProjectUser::class, 'id_project');
     }
+
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'id_department'); // โดยที่ project_id คือ key ที่เชื่อมกัน
+    }
+
+    public function Objective()
+    {
+        return $this->hasMany(Objective::class, 'id_project');
+    }
+    public function projectStyle()
+    {
+        return $this->hasMany(StyleDetail::class, 'id_project');
+    }
+    public function projectPrinciple()
+    {
+        return $this->hasMany(projectPrinciple::class, 'id_project');
+    }
+    public function year()
+    {
+        return $this->belongsTo(year::class, 'id_year'); // โดยที่ project_id คือ key ที่เชื่อมกัน
+    }
+    public function projectIndicator()
+    {
+        return $this->hasMany(indicator::class, 'id_project');
+    }
+
 
     protected $fillable = [
         'project_id',
@@ -54,7 +81,7 @@ class Project extends Model
         'project_name',
         'budget',
         'spend_money',
-        'agency',
+        // 'agency',
         'status',
         'status_performance',
         'status_report',
