@@ -24,15 +24,118 @@ use App\Dto\PositionDTO;
 use App\Dto\YearDTO;
 use App\Dto\StrategicDTO;
 use App\Dto\ActivityDetailDTO;
+use App\Dto\ActivityDTO;
 use App\Dto\EmployeeDTO;
+use App\Dto\IndicatorActivityDTO;
 use App\Dto\IndicatorDTO;
 use App\Dto\ObjectiveDTO;
 use App\Dto\StyleActivtiyDetailDTO;
 use App\Dto\TeacherDTO;
 use App\Models\Principle;
+use Illuminate\Http\Request;
 
 trait Utils
 {
+    public function activityRequestToActivityDTO(Request $request)
+    {
+        $projectDTO = new ActivityDTO();
+
+        $projectDTO->nameActivity = $request->input('name_activity');
+        $projectDTO->idStrategic = $request->input('id_strategic');
+        $projectDTO->abstract = $request->input('abstract');
+        $projectDTO->location = $request->input('location');
+
+        $projectDTO->idDepartment = $request->input('id_department');
+        $projectDTO->result = $request->input('result');
+        $projectDTO->idYear = $request->input('id_year');
+        $projectDTO->obstacle = $request->input('obstacle');
+        $projectDTO->id = $request->input('id');
+        $projectDTO->budget =  $request->input('budget');
+
+
+        // Action plan
+        $actionPlanDTO = new ActionPlanDTO();
+        $actionPlanDTO->actionPlanID = $request->input('id_actionplan');
+        $projectDTO->actionPlanDTO = $actionPlanDTO;
+
+
+        // indicator
+        $indicators = $request->input('indicator_activity');
+        foreach ($indicators as $key => $value) {
+            $indicatorDTO = new IndicatorDTO();
+            $indicatorDTO->indicatorName = $value['indicator_name'];
+            $indicatorDTO->idUnit = $value['unit_name']['value'];
+            $indicatorDTO->goal = $value['goal'];
+            $projectDTO->indicatorsDTO[] = $indicatorDTO;
+        }
+
+        //objective
+        $objectives = $request->input('objective_activity');
+        foreach ($objectives as $key => $value) {
+            $objectiveDTO = new ObjectiveDTO();
+            $objectiveDTO->objectiveName = $value['name'];
+            $projectDTO->ObjectivesDTO[] = $objectiveDTO;
+        }
+
+        // employee
+        $employees = $request->input('employee');
+        foreach ($employees as $key => $value) {
+            $employeeDTO = new EmployeeDTO();
+            $employeeDTO->idUser = $value['id'];
+            $employeeDTO->type = 1;
+            if ($key == 0) {
+                $employeeDTO->main = 1;
+            } else {
+                $employeeDTO->main = 0;
+            }
+            $projectDTO->employeesDTO[] = $employeeDTO;
+        }
+
+        // teacher
+        $teachers = $request->input('teacher');
+        foreach ($teachers as $key => $value) {
+            $teacherDTO = new TeacherDTO();
+            $teacherDTO->idUser = $value['id'];
+            $teacherDTO->type = 2;
+            if ($key == 0) {
+                $teacherDTO->main = 1;
+            } else {
+                $teacherDTO->main = 0;
+            }
+            $projectDTO->teachersDTO[] = $teacherDTO;
+        }
+
+
+        // Okr detail project
+        $okrDetailProjects = $request->input('okr_detail_activity');
+        foreach ($okrDetailProjects as $key => $value) {
+            $okrDetailProjectDTO = new OkrDetailProjectDTO();
+            $okrDetailProjectDTO->idOkr = $value['id'];
+            $projectDTO->okrDetailProjectsDTO[] = $okrDetailProjectDTO;
+        }
+
+        // Principles
+        $principles = $request->input('Activity_principle');
+        foreach ($principles as $key => $value) {
+            $principleDTO = new PrincipleDTO();
+            $principleDTO->idPriciples = $value;
+            $projectDTO->principlesDTO[] = $principleDTO;
+        }
+
+
+        // Style Activtiy Detail
+        $styleActivtiyDetail = $request->input('style_activtiy_detail');
+        foreach ($styleActivtiyDetail as $key => $value) {
+            $styleActivtiyDetailDTO = new StyleActivtiyDetailDTO();
+            $styleActivtiyDetailDTO->idStyle = $value;
+            $projectDTO->styleActivtiyDetailsDTO[] = $styleActivtiyDetailDTO;
+        }
+
+
+        return $projectDTO;
+    }
+
+
     public function projectRequestToProjectDTO(ProjectRequest $request)
     {
         $projectDTO = new ProjectDTO();

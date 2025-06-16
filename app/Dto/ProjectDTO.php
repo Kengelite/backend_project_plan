@@ -19,6 +19,7 @@ class ProjectDTO
     public string $timeEnd;
     public string $location;
     public string $OKRID;
+    public string $id;
     public string $projectDetailID;
 
     public string $idDepartment;

@@ -3,17 +3,20 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ActivityUser extends Model
+class ObjectiveActivity extends Model
 {
-    protected $table = 'Activity_user';
+     use SoftDeletes;
+
+    protected $table = 'objective_activity';
 
     /**
      * The primary key associated with the table.
      *
      * @var string
      */
-    protected $primaryKey = 'id_activity_user';
+    protected $primaryKey = 'objective_activity_id';
 
     /**
      * Indicates if the model's ID is auto-incrementing.
@@ -39,8 +42,11 @@ class ActivityUser extends Model
     const UPDATED_AT = 'updated_at';
     const DELETED_AT = 'deleted_at';
 
-    public function activity()
-    {
-        return $this->belongsTo(Activity::class, 'id_activity'); // แก้ไขเป็น 'activity_id'
-    }
+    protected $fillable = [
+        'objective_activity_id',
+        'objective_activity_name',
+        'created_at',
+        'updated_at',
+        'deleted_at',
+    ];
 }
