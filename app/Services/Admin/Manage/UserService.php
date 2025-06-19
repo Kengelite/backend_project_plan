@@ -3,6 +3,7 @@
 namespace App\Services\Admin\Manage;
 
 use App\Dto\ActivityDTO;
+use App\Dto\UserDTO;
 use App\Models\User;
 use App\Trait\Utils;
 use App\Models\ActivityUser;
@@ -16,6 +17,52 @@ class UserService
         $user = User::with('position')->paginate($perPage)->withQueryString();
         return $user;
     }
+
+    public function store(UserDTO $userDTO)
+    {
+
+        $user = new User();
+
+        if ($userDTO->urlImg) {
+            $resultFile = $this->storeFile($userDTO->urlImg, '/uploads/user');
+            $user->url_img        = @$resultFile['file_name'];
+        }
+
+        $user->name = $userDTO->name;
+        $user->email = $userDTO->email;
+        $user->password = bcrypt($userDTO->password);
+        $user->role = $userDTO->role;
+        $user->academic_position = $userDTO->academicPosition;
+        $user->id_position = $userDTO->idPosition;
+        $user->save();
+        return $user;
+    }
+
+
+    public function update($id, UserDTO $userDTO)
+    {
+
+        $user =  User::findOrFail($id);
+
+        if ($userDTO->urlImg) {
+            $oldImage              = '/uploads/user/' . $user->url_img;
+            $result                = @$this->deleteFile($oldImage);
+            $resultFile = $this->storeFile($userDTO->urlImg, '/uploads/user');
+            $user->url_img        = @$resultFile['file_name'];
+        }
+
+        $user->name = $userDTO->name;
+        $user->email = $userDTO->email;
+        $user->password = $userDTO->password;
+        $user->role = $userDTO->role;
+        $user->academic_position = $userDTO->academicPosition;
+        $user->id_position = $userDTO->idPosition;
+        $user->save();
+        return $user;
+    }
+
+
+
     public function getByID($id)
     {
         $user = User::findOrFail($id);
@@ -88,6 +135,12 @@ class UserService
         // return $strategic;
 
         $user = User::where('id', $id)->firstOrFail();
+
+        if ($user->url_img) {
+            $oldImage              = '/uploads/user/' . $user->url_img;
+            $result                = @$this->deleteFile($oldImage);
+        }
+
         $user->delete();
         return $user;
     }

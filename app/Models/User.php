@@ -9,6 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\SoftDeletes;
+
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
@@ -24,6 +25,10 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'role',
+        'url_img',
+        'academic_position',
+        'id_position',
     ];
 
     /**
