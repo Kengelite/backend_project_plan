@@ -40,7 +40,7 @@ trait Utils
     {
         $projectDTO = new ActivityDTO();
 
-        $projectDTO->nameActivity = $request->input('name_activity');
+        $projectDTO->nameActivity = $request->input('activity_name');
         $projectDTO->idStrategic = $request->input('id_strategic');
         $projectDTO->abstract = $request->input('abstract');
         $projectDTO->location = $request->input('location');
@@ -51,7 +51,7 @@ trait Utils
         $projectDTO->obstacle = $request->input('obstacle');
         $projectDTO->id = $request->input('id');
         $projectDTO->budget =  $request->input('budget');
-
+        $projectDTO->idProject =  $request->input('id_project');
 
         // Action plan
         $actionPlanDTO = new ActionPlanDTO();
@@ -115,7 +115,7 @@ trait Utils
         }
 
         // Principles
-        $principles = $request->input('Activity_principle');
+        $principles = $request->input('activity_principle');
         foreach ($principles as $key => $value) {
             $principleDTO = new PrincipleDTO();
             $principleDTO->idPriciples = $value;

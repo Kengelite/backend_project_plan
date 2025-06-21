@@ -12,6 +12,7 @@ class Activity extends Model
     protected $table = 'Activity';
     protected $primaryKey = 'activity_id';
     protected $keyType = 'string';
+    public $incrementing = false;
     public function ActivityUsers()
     {
         return $this->hasMany(ActivityUser::class, 'activity_id');

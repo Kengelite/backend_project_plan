@@ -213,16 +213,17 @@ class ActivityService
             // $activityDB->time_end = $projectDTO->timeEnd;
             // $activityDB->location = $projectDTO->location;
             // $activityDB->id_action_plan = $actionPlanDTO->actionPlanID;
-            // $activityDB->project_detail_id = "";
+            $activityDB->budget = $projectDTO->budget;
             // $activityDB->OKR_id = "";
             $activityDB->detail_short = "";
             $activityDB->spend_money = 0;
             $activityDB->id = $projectDTO->id;
-            $activityDB->id_project = "";
+            // $activityDB->id_project = "";
 
             $activityDB->id_department = $projectDTO->idDepartment;
             $activityDB->result = $projectDTO->result;
             $activityDB->id_year = $projectDTO->idYear;
+            $activityDB->id_project = $projectDTO->idProject;
             $activityDB->obstacle = $projectDTO->obstacle;
             $activityDB->save();
 
@@ -252,7 +253,7 @@ class ActivityService
             foreach ($styleActivtiyDetailsDTO as $key => $value) {
                 $styleActivtiyDetailDB = new StyleActivtiyDetail();
                 $styleActivtiyDetailDB->id_style = $value->idStyle;
-                $styleActivtiyDetailDB->id_activity = ""; //TODO ไม่มี id activity
+                $styleActivtiyDetailDB->id_activity = $activityDB->activity_id ; //TODO ไม่มี id activity
                 $styleActivtiyDetailDB->save();
             }
 
@@ -297,7 +298,7 @@ class ActivityService
                 $indicatorDB = new IndicatorActivity();
                 $indicatorDB->indicator_name =  $value->indicatorName;
                 $indicatorDB->goal =  $value->goal;
-                // $indicatorDB->id_project = $activityDB->project_id;
+                $indicatorDB->id_activity = $activityDB->activity_id;
                 $indicatorDB->id_unit =  $value->idUnit;
                 $indicatorDB->save();
             }

@@ -24,14 +24,14 @@ class ActivityDetailService
         $activityDetail = ActivityDetail::findOrFail($id);
         return $activityDetail;
     }
-    public function getByIDactivityAdmin($id,$perPage)
+    public function getByIDactivityAdmin($id, $perPage)
     {
         $activityDetail = ActivityDetail::where('id_activity', $id)
-            ->orderBy('report_data','DESC')
+            ->orderBy('report_data', 'DESC')
             ->paginate($perPage)->withQueryString();
         return $activityDetail;
     }
-    public function getByIDactivity($id,$perPage)
+    public function getByIDactivity($id, $perPage)
     {
         $activityDetail = ActivityDetail::where('id_activity', $id)
             // ->where('status', '=', '1')
@@ -113,11 +113,13 @@ class ActivityDetailService
             $activityDetailDB->report_data = $activityDetailDTO->report_data;
             $activityDetailDB->id_employee = $activityDetailDTO->id_employee;
             $activityDetailDB->id_activity = $activityDetailDTO->id_activity;
+
             $activityDetailDB->save();
 
             // 2. อัปเดต activity
             $activity = Activity::findOrFail($activityDetailDTO->id_activity);
             $activity->spend_money += $activityDetailDTO->price;
+            $activity->status_report = 1;
             $activity->save();
             $result['activity_spend_money'] = $activity->budget  - $activity->spend_money;
 
