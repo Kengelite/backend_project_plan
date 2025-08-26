@@ -31,8 +31,11 @@ use App\Dto\IndicatorDTO;
 use App\Dto\ObjectiveDTO;
 use App\Dto\StyleActivtiyDetailDTO;
 use App\Dto\TeacherDTO;
+use App\Dto\UserDTO;
+use App\Http\Requests\Admin\Manage\UserRequest;
 use App\Models\Principle;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 trait Utils
 {
@@ -336,5 +339,56 @@ trait Utils
         $activityDetailDTO->id_employee = $request->input('id_employee');
         $activityDetailDTO->id_activity = $request->input('id_activity');
         return $activityDetailDTO;
+    }
+
+    public function storeFile($file, $path = "/uploads")
+    {
+        $originalExtension = strtolower($file->getClientOriginalExtension());
+        // $originalName = strtolower($file->getClientOriginalName());
+        // สร้างชื่อไฟล์ใหม่
+        $fileName = Str::uuid()->toString() . '.' . $originalExtension;
+
+        // จัดเก็บไฟล์ในโฟลเดอร์ public/uploads
+        $filePath = $file->move(public_path($path), $fileName);
+
+        return [
+            'file_path'     => "/$path/" . $fileName,
+            'absolute_path' => $filePath,
+            'file_name'     => $fileName,
+        ];
+    }
+
+    public function deleteFile($filePath)
+    {
+        // ตรวจสอบว่าไฟล์มีอยู่หรือไม่
+        if (file_exists(public_path($filePath))) {
+            // ลบไฟล์
+            unlink(public_path($filePath));
+            return [
+                'status'    => 'success',
+                'message'   => 'File deleted successfully.',
+                'file_path' => $filePath,
+            ];
+        } else {
+            return [
+                'status'    => 'error',
+                'message'   => 'File does not exist.',
+                'file_path' => $filePath,
+            ];
+        }
+    }
+
+    public function userRequestToUserDTO(UserRequest $request)
+    {
+        $userDTO = new UserDTO();
+
+        $userDTO->name = $request->input('name');
+        $userDTO->email = $request->input('email', "");
+        $userDTO->password = $request->input('password');
+        $userDTO->role = $request->input('role');
+        $userDTO->urlImg = $request->file('url_img');
+        $userDTO->academicPosition = $request->input('academic_position');
+        $userDTO->idPosition = $request->input('id_position');
+        return $userDTO;
     }
 }
