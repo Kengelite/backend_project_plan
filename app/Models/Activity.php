@@ -13,10 +13,7 @@ class Activity extends Model
     protected $primaryKey = 'activity_id';
     protected $keyType = 'string';
     public $incrementing = false;
-    public function ActivityUsers()
-    {
-        return $this->hasMany(ActivityUser::class, 'activity_id');
-    }
+
 
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
@@ -33,7 +30,7 @@ class Activity extends Model
         });
     }
 
-      protected $fillable = [
+    protected $fillable = [
         'activity_id',
         'id',
         'name_activity',
@@ -43,7 +40,7 @@ class Activity extends Model
         'status',
         'status_performance',
         'status_report',
-        'detail_short',
+        // 'detail_short',
         'abstract',
         'time_start',
         'time_end',
@@ -57,4 +54,37 @@ class Activity extends Model
         'id_year',
         'obstacle',
     ];
+
+    public function ActivityUsers()
+    {
+        return $this->hasMany(ActivityUser::class, 'id_activity');
+    }
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'id_department'); // โดยที่ project_id คือ key ที่เชื่อมกัน
+    }
+    public function ObjectiveActivity()
+    {
+        return $this->hasMany(ObjectiveActivity::class, 'id_activity');
+    }
+    public function activityOkr()
+    {
+        return $this->hasMany(OkrDetailActivity::class, 'id_activity');
+    }
+    public function activityPrinciple()
+    {
+        return $this->hasMany(ActivityPrinciple::class, 'id_activity');
+    }
+    public function activityStyle()
+    {
+        return $this->hasMany(StyleActivtiyDetail::class, 'id_activity');
+    }
+    public function year()
+    {
+        return $this->belongsTo(year::class, 'id_year'); // โดยที่ project_id คือ key ที่เชื่อมกัน
+    }
+    public function activityIndicator()
+    {
+        return $this->hasMany(IndicatorActivity::class, 'id_activity');
+    }
 }

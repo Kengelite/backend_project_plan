@@ -12,12 +12,15 @@ use App\Http\Requests\Admin\Manage\YearRequest;
 use App\Http\Requests\Admin\Manage\StrategicRequest;
 use App\Http\Requests\Admin\Manage\ActionplanRequest;
 use App\Http\Requests\Admin\Manage\ActivitydetailRequest;
+use App\Http\Requests\Admin\Manage\ProjectEditRequest;
+use App\Http\Requests\Admin\Manage\ActivityEditRequest;
 use App\Dto\ObstacleDTO;
 use App\Dto\OkrDetailProjectDTO;
 use App\Dto\PrincipleDTO;
 use App\Dto\ProjectDTO;
 use App\Dto\DepartmentDTO;
 use App\Dto\ResultDTO;
+use App\Dto\OkrDTO;
 use App\Dto\TypeDTO;
 use App\Dto\StyleDetailDTO;
 use App\Dto\PositionDTO;
@@ -31,8 +34,11 @@ use App\Dto\IndicatorDTO;
 use App\Dto\ObjectiveDTO;
 use App\Dto\StyleActivtiyDetailDTO;
 use App\Dto\TeacherDTO;
+use App\Dto\ProjectEditDTO;
 use App\Dto\UserDTO;
 use App\Http\Requests\Admin\Manage\UserRequest;
+use App\Http\Requests\Admin\Manage\OkrRequest;
+
 use App\Models\Principle;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -47,7 +53,8 @@ trait Utils
         $projectDTO->idStrategic = $request->input('id_strategic');
         $projectDTO->abstract = $request->input('abstract');
         $projectDTO->location = $request->input('location');
-
+        $projectDTO->timeStart = $request->input('time_start');
+        $projectDTO->timeEnd = $request->input('time_end');
         $projectDTO->idDepartment = $request->input('id_department');
         $projectDTO->result = $request->input('result');
         $projectDTO->idYear = $request->input('id_year');
@@ -127,7 +134,7 @@ trait Utils
 
 
         // Style Activtiy Detail
-        $styleActivtiyDetail = $request->input('style_activtiy_detail');
+        $styleActivtiyDetail = $request->input('style_activity_detail');
         foreach ($styleActivtiyDetail as $key => $value) {
             $styleActivtiyDetailDTO = new StyleActivtiyDetailDTO();
             $styleActivtiyDetailDTO->idStyle = $value;
@@ -178,7 +185,7 @@ trait Utils
             $projectDTO->indicatorsDTO[] = $indicatorDTO;
         }
 
-        // style activtiy details
+        // object
         $objectives = $request->input('objective');
         foreach ($objectives as $key => $value) {
             $objectiveDTO = new ObjectiveDTO();
@@ -239,12 +246,12 @@ trait Utils
 
 
         // Principles
-        $styleActivtiyDetail = $request->input('style_detail', []);
-        foreach ($styleActivtiyDetail as $key => $value) {
-            $styleActivtiyDetailDTO = new StyleActivtiyDetailDTO();
-            $styleActivtiyDetailDTO->idStyle = $value;
-            $projectDTO->styleActivtiyDetailsDTO[] = $styleActivtiyDetailDTO;
-        }
+        // $styleActivtiyDetail = $request->input('style_detail', []);
+        // foreach ($styleActivtiyDetail as $key => $value) {
+        //     $styleActivtiyDetailDTO = new StyleActivtiyDetailDTO();
+        //     $styleActivtiyDetailDTO->idStyle = $value;
+        //     $projectDTO->styleActivtiyDetailsDTO[] = $styleActivtiyDetailDTO;
+        // }
 
         // // Result
         // $results = $request->input('result');
@@ -264,6 +271,78 @@ trait Utils
         return $projectDTO;
     }
 
+    public function projectEditRequestToProjectDTO(ProjectEditRequest $request, string $id)
+    {
+        $projectDTO = new ProjectDTO();
+
+        $projectDTO->projectName = $request->input('project_name');
+        $projectDTO->id = $id;
+        $projectDTO->abstract = $request->input('abstract');
+        $projectDTO->timeStart = $request->input('time_start');
+        $projectDTO->timeEnd = $request->input('time_end');
+        $projectDTO->location = $request->input('location');
+
+        $projectDTO->idDepartment = $request->input('id_department');
+        $projectDTO->result = $request->input('result');
+        $projectDTO->idYear = $request->input('id_year');
+        $projectDTO->obstacle = $request->input('obstacle');
+        $projectDTO->budget =  $request->input('budget');
+        $projectDTO->projectNumber =  $request->input('project_number');
+
+
+        // Style Details
+        $styleDetails = $request->input('style_detail');
+        foreach ($styleDetails as $key => $value) {
+            $styleDetailDTO = new StyleDetailDTO();
+            $styleDetailDTO->idStyle = $value;
+            $projectDTO->styleDetailsDTO[] = $styleDetailDTO;
+        }
+
+        $principles = $request->input('project_principle', []);
+        foreach ($principles as $key => $value) {
+            $principleDTO = new PrincipleDTO();
+            $principleDTO->namePriciples = $value;
+            $projectDTO->principlesDTO[] = $principleDTO;
+        }
+
+        return $projectDTO;
+    }
+    public function ActivityEditRequestToActivityDTO(ActivityEditRequest $request, string $id)
+    {
+        $projectDTO = new ActivityDTO();
+
+        $projectDTO->nameActivity = $request->input('name_activity');
+        $projectDTO->activityID = $id;
+        $projectDTO->abstract = $request->input('abstract');
+        $projectDTO->timeStart = $request->input('time_start');
+        $projectDTO->timeEnd = $request->input('time_end');
+        $projectDTO->location = $request->input('location');
+
+        $projectDTO->idDepartment = $request->input('id_department');
+        $projectDTO->result = $request->input('result');
+        $projectDTO->idYear = $request->input('id_year');
+        $projectDTO->obstacle = $request->input('obstacle');
+        $projectDTO->budget =  $request->input('budget');
+        $projectDTO->id =  $request->input('id');
+
+
+        // Style Details
+        $styleDetails = $request->input('activity_style_detail');
+        foreach ($styleDetails as $key => $value) {
+            $styleDetailDTO = new StyleDetailDTO();
+            $styleDetailDTO->idStyle = $value;
+            $projectDTO->styleDetailsDTO[] = $styleDetailDTO;
+        }
+
+        $principles = $request->input('activity_principle', []);
+        foreach ($principles as $key => $value) {
+            $principleDTO = new PrincipleDTO();
+            $principleDTO->namePriciples = $value;
+            $projectDTO->principlesDTO[] = $principleDTO;
+        }
+
+        return $projectDTO;
+    }
     public function departmentRequestToDepertmentDTO(DepartmentRequest $request)
     {
         $departmentDTO = new DepartmentDTO();
@@ -300,6 +379,7 @@ trait Utils
         $YearDTO = new YearDTO();
 
         $YearDTO->nameYear = $request->input('year');
+        $YearDTO->budget = $request->input('budget');
         return $YearDTO;
     }
 
@@ -384,11 +464,29 @@ trait Utils
 
         $userDTO->name = $request->input('name');
         $userDTO->email = $request->input('email', "");
-        $userDTO->password = $request->input('password');
-        $userDTO->role = $request->input('role');
+        if ($request->filled('password')) {
+            $userDTO->password = $request->input('password');
+        }
+        // $userDTO->role = $request->input('role');
         $userDTO->urlImg = $request->file('url_img');
         $userDTO->academicPosition = $request->input('academic_position');
         $userDTO->idPosition = $request->input('id_position');
         return $userDTO;
+    }
+
+    public function okrRequestToOkrDTO(OkrRequest $request)
+    {
+        $dataDTO = new OkrDTO();
+
+        $dataDTO->okrnumber = $request->input('okr_number');
+        $dataDTO->okrname = $request->input('okr_name');
+        $dataDTO->goal = $request->input('goal');
+        $dataDTO->result = $request->input('result');
+        $dataDTO->reportdata = $request->input('report_data');
+        $dataDTO->startdate = $request->input('start_date');
+        $dataDTO->enddate = $request->input('end_date');
+        $dataDTO->idunit = $request->input('id_unit');
+        $dataDTO->idyear = $request->input('id_year');
+        return $dataDTO;
     }
 }

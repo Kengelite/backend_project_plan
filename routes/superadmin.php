@@ -15,6 +15,15 @@ use App\Http\Controllers\Admin\Manage\DepartmentController;
 use App\Http\Controllers\Admin\Manage\PositionController;
 use App\Http\Controllers\Admin\Manage\UnitController;
 use App\Http\Controllers\Admin\Manage\EmailController;
+use App\Http\Controllers\Admin\Manage\IndicatorController;
+use App\Http\Controllers\DashboardController;
+
+use App\Http\Controllers\Admin\Manage\ObjectiveController;
+use App\Http\Controllers\Admin\Manage\OkrActivityController;
+use App\Http\Controllers\Admin\Manage\OkrProjectController;
+use App\Http\Controllers\Admin\Manage\ObjectiveActivityController;
+use App\Http\Controllers\Admin\Manage\IndicatorActivityController;
+use App\Http\Controllers\Admin\Manage\UserActivityController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
@@ -48,6 +57,7 @@ Route::group(['prefix' => '/v1'], function () {
         Route::delete('deletedepartment', [DepartmentController::class, 'destroy']);
 
         Route::resource('positionall', PositionController::class);
+        Route::get('position', [PositionController::class, 'positionuser']);
         Route::post('updatestatusposition', [PositionController::class, 'updatestatus']);
         Route::delete('deleteposition', [PositionController::class, 'destroy']);
 
@@ -83,11 +93,14 @@ Route::group(['prefix' => '/v1'], function () {
         Route::post('updatestatusproject', [ProjectController::class, 'updatestatusProject']);
         Route::delete('deleteproject', [ProjectController::class, 'destroy']);
         Route::post('projectallbyidyear', [ProjectController::class, 'getByIdYear']);
+        Route::post('projectid', [ProjectController::class, 'projectById']);
+
+
 
 
         Route::resource('activity', ActivityController::class);
         Route::post('activitybyidproject', [ActivityController::class, 'activityByIdproject']);
-        Route::post('activitybyidprojectAdmin', [ActivityController::class, 'activityByIdprojectAdmin']);
+        Route::post('activitybyidprojectadmin', [ActivityController::class, 'activityByIdprojectAdmin']);
         Route::post('updatestatusactivity', [ActivityController::class, 'updatestatusActivity']);
         Route::post('activityuserallbyidyear', [ActivityController::class, 'getActivityUserYear']);
         Route::delete('deleteactivity', [ActivityController::class, 'destroy']);
@@ -107,11 +120,37 @@ Route::group(['prefix' => '/v1'], function () {
         Route::post('projectuserallbyiduseradmin', [ProjectUserController::class, 'getByIdUserYearAdmin']);
         Route::post('projectuserallbyiduser', [ProjectUserController::class, 'getByIdUser']);
         Route::post('projectuserallbyidyear', [ProjectUserController::class, 'getByIdYear']);
+        Route::post('editprojectuser', [ProjectUserController::class, 'update']);
+        Route::post('deleteprojectuser', [ProjectUserController::class, 'destroy']);
 
 
         Route::resource('unitall', UnitController::class);
         Route::get('unit', [UnitController::class, 'user']);
 
-        Route::get('/send-mail/{id}/{type}',[EmailController::class,'sendEmail']);
+
+        Route::post('dashboard', [DashboardController::class, 'project']);
+        Route::post('dashboardpie', [DashboardController::class, 'pie']);
+        Route::post('dashboardlinestrategicreport', [DashboardController::class, 'LineStrategicReport']);
+        Route::get('/send-mail/{id}/{type}', [EmailController::class, 'sendEmail']);
+
+        Route::get('/testmail/{id}/{type}', [EmailController::class, 'testEmail']);
+
+        Route::post('addobjective', [ObjectiveController::class, 'store']);
+        Route::post('editobjective', [ObjectiveController::class, 'update']);
+        Route::post('deleteobjective', [ObjectiveController::class, 'destroy']);
+
+        Route::post('addokrproject', [OkrProjectController::class, 'store']);
+        Route::post('editokrproject', [OkrProjectController::class, 'update']);
+        Route::post('deleteokrproject', [OkrProjectController::class, 'destroy']);
+
+        Route::resource('okractivity', OkrActivityController::class);
+
+        Route::resource('objectiveactivity', ObjectiveActivityController::class);
+        Route::resource('indicatoractivity', IndicatorActivityController::class);
+        Route::resource('useractivity', UserActivityController::class);
+
+        Route::post('addindicatorproject', [IndicatorController::class, 'store']);
+        Route::post('editindicatorproject', [IndicatorController::class, 'update']);
+        Route::post('deleteindicatorproject', [IndicatorController::class, 'destroy']);
     });
 });

@@ -55,4 +55,9 @@ class ActionPlan extends Model
     {
         return $this->belongsTo(Strategic::class, 'id_strategic'); // โดยที่ project_id คือ key ที่เชื่อมกัน
     }
+
+    public function projects()
+    {
+        return $this->hasMany(Project::class, 'id_action_plan');
+    }
 }

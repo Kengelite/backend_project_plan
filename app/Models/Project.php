@@ -74,6 +74,11 @@ class Project extends Model
         return $this->hasMany(indicator::class, 'id_project');
     }
 
+    public function projectOkr()
+    {
+        return $this->hasMany(OkrDetailProject::class, 'id_project');
+    }
+
 
     protected $fillable = [
         'project_id',

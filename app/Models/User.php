@@ -62,6 +62,8 @@ class User extends Authenticatable
         return $this->belongsTo(Position::class, 'id_position');
     }
 
+    
+
     protected static function boot()
     {
         parent::boot();

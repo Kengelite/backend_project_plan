@@ -3,6 +3,7 @@
 namespace App\Services\Admin\Manage;
 
 use App\Dto\ActivityDTO;
+use App\Dto\OkrDTO;
 use App\Models\Okr;
 use App\Trait\Utils;
 use App\Models\ActivityUser;
@@ -77,13 +78,17 @@ class OkrService
     }
     public function getByID($id)
     {
-        $activity = Okr::findOrFail($id);
+        $activity = Okr::where('okr_id', $id)
+            ->with("year")
+            ->firstOrFail();
+
         return $activity;
     }
 
     public function getOkrUse()
     {
         $activity = Okr::where('status', 1)
+
             ->orderBy('okr_id')
             ->get();
         return $activity;
@@ -146,5 +151,26 @@ class OkrService
         $activity = Okr::where('okr_id', $id)->firstOrFail();
         $activity->delete();
         return $activity;
+    }
+    public function update($id, OkrDTO $dataDTO)
+    {
+        return DB::transaction(function () use ($dataDTO, $id) {
+            $okr = okr::where('okr_id', $id)->firstOrFail();
+
+            $okr->okr_number    = $dataDTO->okrnumber;
+            $okr->okr_name      = $dataDTO->okrname;
+            // $okr->status_report = $dataDTO->status_report ?? $okr->status_report;
+            $okr->goal          = $dataDTO->goal;
+            $okr->result        = $dataDTO->result;
+            $okr->report_data = $dataDTO->reportdata ?? '';
+            $okr->start_date    = $dataDTO->startdate;
+            $okr->end_date      = $dataDTO->enddate;
+            $okr->id_unit       = $dataDTO->idunit;
+            $okr->id_year       = $dataDTO->idyear;
+
+            $okr->save();
+
+            return $okr;
+        });
     }
 }

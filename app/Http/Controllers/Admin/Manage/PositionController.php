@@ -36,6 +36,24 @@ class PositionController extends Controller
         }
     }
 
+       public function positionuser(PositionService $positionService)
+    {
+        try {
+            $result = $positionService->getPositionuser();
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
     public function activityByIdproject(PositionService $positionService,Request $request)
     {
 

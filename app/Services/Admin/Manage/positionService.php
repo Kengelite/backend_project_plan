@@ -18,6 +18,12 @@ class PositionService
         $activity = position::paginate($perPage)->withQueryString();
         return $activity;
     }
+
+    public function getPositionuser()
+    {
+        $activity = position::where('status','1')->get();
+        return $activity;
+    }
     public function getByID($id)
     {
         $activity = position::findOrFail($id);
@@ -115,6 +121,4 @@ class PositionService
             return $position;
         });
     }
-
-    
 }

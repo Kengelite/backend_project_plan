@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\HTTPCreatedResponse;
 use App\Http\Resources\HTTPSuccessResponse;
 use App\Services\Admin\Manage\ActivityService;
+use App\Http\Requests\Admin\Manage\ActivityEditRequest;
 use App\Trait\Utils;
 use Illuminate\Http\Request;
+use App\Http\Requests\Admin\Manage\ActivityRequest;
 
 class ActivityController extends Controller
 {
@@ -147,7 +149,7 @@ class ActivityController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request, ActivityService $activityService)
+    public function store(ActivityRequest $request, ActivityService $activityService)
     {
         try {
             $activityDTO = $this->activityRequestToActivityDTO($request);
@@ -171,9 +173,22 @@ class ActivityController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $id, ActivityService $activityService)
     {
-        //
+        try {
+            $result = $activityService->getByID($id);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -187,9 +202,24 @@ class ActivityController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(ActivityEditRequest $request, ActivityService $projectService, string $id)
     {
-        //
+        try {
+            $studentCourseDTO = $this->ActivityEditRequestToActivityDTO($request, $id);
+            // dd($studentCourseDTO);
+            $result = $projectService->update($studentCourseDTO, $id);
+            $res = new HTTPCreatedResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_CREATED);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**

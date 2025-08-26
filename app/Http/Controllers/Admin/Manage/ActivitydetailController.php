@@ -98,6 +98,7 @@ class ActivitydetailController extends Controller
     public function destroy(ActivityDetailService $activityDetailService, Request $request)
     {
         try {
+            
             $id_activitydetail = $request->id_activitydetail;
             $result = $activityDetailService->delete($id_activitydetail);
             $res = new HTTPSuccessResponse(['data' => $result]);

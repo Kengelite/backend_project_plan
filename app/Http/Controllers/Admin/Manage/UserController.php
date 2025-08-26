@@ -147,6 +147,12 @@ class UserController extends Controller
     public function store(UserRequest $request, UserService $userService)
     {
         try {
+            $secretKey = $request->header('X-Secret-Key');
+            if ($secretKey !== env('SECRET_KEY_SUPERADMIN')) {
+                return response()->json([
+                    'message' => 'Unauthorized: Invalid secret key',
+                ], \Illuminate\Http\Response::HTTP_FORBIDDEN);
+            }
             $courseDTO = $this->userRequestToUserDTO($request);
             $result    = $userService->store($courseDTO);
             $res       = new HTTPCreatedResponse(['data' => $result]);
@@ -185,6 +191,12 @@ class UserController extends Controller
     public function update(UserRequest $request, string $id, UserService $userService)
     {
         try {
+            $secretKey = $request->header('X-Secret-Key');
+            if ($secretKey !== env('SECRET_KEY_SUPERADMIN')) {
+                return response()->json([
+                    'message' => 'Unauthorized: Invalid secret key',
+                ], \Illuminate\Http\Response::HTTP_FORBIDDEN);
+            }
             $userDTO = $this->userRequestToUserDTO($request);
             $result  = $userService->update($id, $userDTO);
             $res     = new HTTPSuccessResponse(['data' => $result]);
@@ -207,6 +219,12 @@ class UserController extends Controller
     public function destroy(UserService $userService, Request $request)
     {
         try {
+            $secretKey = $request->header('X-Secret-Key');
+            if ($secretKey !== env('SECRET_KEY_SUPERADMIN')) {
+                return response()->json([
+                    'message' => 'Unauthorized: Invalid secret key',
+                ], \Illuminate\Http\Response::HTTP_FORBIDDEN);
+            }
             $id = $request->id;
             $result = $userService->delete($id);
             $res = new HTTPSuccessResponse(['data' => $result]);

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin\Manage;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\Manage\ProjectRequest;
+use App\Http\Requests\Admin\Manage\ProjectEditRequest;
 use App\Http\Resources\HTTPCreatedResponse;
 use App\Http\Resources\HTTPSuccessResponse;
 use App\Services\Admin\Manage\ProjectService;
@@ -34,7 +35,7 @@ class ProjectController extends Controller
         }
     }
 
-    public function projectByIdactionplan(ProjectService $projectService,Request $request)
+    public function projectByIdactionplan(ProjectService $projectService, Request $request)
     {
 
         try {
@@ -55,8 +56,29 @@ class ProjectController extends Controller
         }
     }
 
+    public function projectById(ProjectService $projectService, Request $request)
+    {
 
-    public function updatestatusProject(ProjectService $projectService,Request $request){
+        try {
+            $id_actionplan = $request->project_id;
+            $perPage = $request->input('per_page', 10);
+            $result = $projectService->getByIDproject($id_actionplan, $perPage);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function updatestatusProject(ProjectService $projectService, Request $request)
+    {
         try {
             $project_id = $request->project_id;
             $result = $projectService->updateStatus($project_id);
@@ -75,12 +97,12 @@ class ProjectController extends Controller
     }
 
 
-    public function getByIdYear(ProjectService $projectService,Request $request)
+    public function getByIdYear(ProjectService $projectService, Request $request)
     {
         try {
             $id_year = $request->id_year;
             $perPage = $request->input('per_page', 10);
-            $result = $projectService->getByIDYear($id_year,$perPage);
+            $result = $projectService->getByIDYear($id_year, $perPage);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -107,7 +129,7 @@ class ProjectController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(ProjectRequest $request,ProjectService $projectService)
+    public function store(ProjectRequest $request, ProjectService $projectService)
     {
         try {
             $studentCourseDTO = $this->projectRequestToProjectDTO($request);
@@ -146,9 +168,24 @@ class ProjectController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(ProjectEditRequest $request, ProjectService $projectService,string $id)
     {
-        //
+        try {
+            $studentCourseDTO = $this->projectEditRequestToProjectDTO($request,$id);
+            // dd($studentCourseDTO);
+            $result = $projectService->update($studentCourseDTO,$id);
+            $res = new HTTPCreatedResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_CREATED);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**

@@ -6,6 +6,7 @@ use App\Dto\YearDTO;
 use App\Models\Year;
 use App\Trait\Utils;
 use Illuminate\Support\Facades\DB;
+
 class YearService
 {
     use Utils;
@@ -17,9 +18,9 @@ class YearService
 
     public function getAllYearUser()
     {
-        $year = Year::where('status',1)
-        ->orderByDesc('year')
-        ->paginate(10)->withQueryString();;
+        $year = Year::where('status', 1)
+            ->orderByDesc('year')
+            ->paginate(10)->withQueryString();;
         return $year;
     }
     public function updateStatus($id)
@@ -52,6 +53,7 @@ class YearService
         DB::transaction(function () use ($yearDTO, $yearDB) {
             // Project
             $yearDB->year = $yearDTO->nameYear;
+            $yearDB->budget = $yearDTO->budget;
             $yearDB->save();
         });
 
@@ -63,6 +65,8 @@ class YearService
             $year = Year::where('year_id', $id)->firstOrFail();
 
             $year->year = $yearDTO->nameYear;
+
+            $year->budget = $yearDTO->budget;
 
             $year->save();
 

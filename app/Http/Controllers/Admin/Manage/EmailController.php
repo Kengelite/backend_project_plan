@@ -5,16 +5,16 @@ namespace App\Http\Controllers\Admin\Manage;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Services\Admin\Manage\ActivityService;
-use App\Http\Resources\HTTPSuccessResponse;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\TestMail;
-
+use App\Http\Resources\HTTPCreatedResponse;
+use App\Http\Resources\HTTPSuccessResponse;
 class EmailController extends Controller
 {
     public function sendEmail(ActivityService $activityService, string $id, string $type)
     {
         try {
-            $result = $activityService->getByID($id);
+            $result = $activityService->getByIDforSendEmail($id);
             $update_send_email = $activityService->updateSendEmailByID($id);
             $result_user = $activityService->getUserByIDActivity($id);
             $details = [
@@ -47,6 +47,24 @@ class EmailController extends Controller
 
             $res = new HTTPSuccessResponse(['data' => "Email sent successfully"]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function testEmail(ActivityService $activityService, string $id, string $type)
+    {
+        try {
+            $result = $activityService->getByIDforSendEmail($id);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_CREATED);
         } catch (\App\Exceptions\CustomException $e) {
             return response()->json([
                 'message' => $e->getMessage(),

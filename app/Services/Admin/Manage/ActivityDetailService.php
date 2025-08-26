@@ -10,6 +10,7 @@ use App\Models\ActionPlan;
 use App\Models\Strategic;
 use App\Trait\Utils;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class ActivityDetailService
 {
@@ -26,8 +27,14 @@ class ActivityDetailService
     }
     public function getByIDactivityAdmin($id, $perPage)
     {
-        $activityDetail = ActivityDetail::where('id_activity', $id)
-            ->orderBy('report_data', 'DESC')
+        // $activityDetail = ActivityDetail::where('id_activity', $id)
+        //     ->orderBy('report_data', 'DESC')
+        //     ->paginate($perPage)->withQueryString();
+
+        $activityDetail  = DB::table('Activity_detail')->where('id_activity', $id)
+            ->select('Activity_detail.*', 'users.name')
+            ->leftJoin('users', 'id', 'id_employee')
+            ->orderBy('Activity_detail.deleted_at', 'ASC')
             ->paginate($perPage)->withQueryString();
         return $activityDetail;
     }
@@ -86,6 +93,7 @@ class ActivityDetailService
             $result['strategic_remain_budget'] = floatval($strategic->budget) - floatval($strategic->spend_money);
 
             // 5. ลบ ActivityDetail
+            $activityDetail->id_employee = Auth::id();
             $activityDetail->delete();
 
             return $activityDetail;
@@ -111,7 +119,7 @@ class ActivityDetailService
             $activityDetailDB->station = $activityDetailDTO->station;
 
             $activityDetailDB->report_data = $activityDetailDTO->report_data;
-            $activityDetailDB->id_employee = $activityDetailDTO->id_employee;
+            // $activityDetailDB->id_employee = $activityDetailDTO->id_employee;
             $activityDetailDB->id_activity = $activityDetailDTO->id_activity;
 
             $activityDetailDB->save();

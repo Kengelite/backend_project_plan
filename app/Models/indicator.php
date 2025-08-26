@@ -5,9 +5,10 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Illuminate\Database\Eloquent\SoftDeletes;
+
 class indicator extends Model
 {
- use SoftDeletes;
+    use SoftDeletes;
     protected $table = 'indicator';
     protected $primaryKey = 'indicator_id';
     protected $keyType = 'string';
@@ -16,12 +17,16 @@ class indicator extends Model
     const CREATED_AT = 'created_at';
     const UPDATED_AT = 'updated_at';
     const DELETED_AT = 'deleted_at';
-
+    public $incrementing = false;
     // public function ActivityUsers()
     // {
     //     return $this->hasMany(ActivityUser::class, 'activity_id');
     // }
 
+    public function unit()
+    {
+        return $this->belongsTo(Unit::class, 'id_unit'); // โดยที่ project_id คือ key ที่เชื่อมกัน
+    }
     protected static function boot()
     {
         parent::boot();
@@ -33,7 +38,7 @@ class indicator extends Model
         });
     }
 
-     protected $fillable = [
+    protected $fillable = [
         'indicator_id',
         'indicator_name',
         'goal',

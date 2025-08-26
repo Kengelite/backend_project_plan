@@ -14,7 +14,12 @@ class Strategic extends Model
     protected $keyType = 'string';      // UUID เป็น string
     public function actionplan()
     {
-        return $this->hasMany(actionplan::class, 'strategic_id');
+        return $this->hasMany(actionplan::class, 'id_strategic');
+    }
+
+    public function actionPlans()
+    {
+        return $this->hasMany(ActionPlan::class, 'id_strategic', 'strategic_id');
     }
 
     protected $fillable = [

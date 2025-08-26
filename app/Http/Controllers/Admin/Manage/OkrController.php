@@ -5,18 +5,25 @@ namespace App\Http\Controllers\Admin\Manage;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Http\Resources\HTTPSuccessResponse;
+use App\Http\Resources\HTTPCreatedResponse;
 use App\Services\Admin\Manage\OkrService;
+
+use App\Trait\Utils;
+use App\Http\Requests\Admin\Manage\OkrRequest;
+
 class OkrController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index(OkrService $okrService,Request $request)
+    use Utils;
+
+    public function index(OkrService $okrService, Request $request)
     {
         try {
             $perPage = $request->input('per_page', 10);
             $year_id = $request->input('id_year');
-            $result = $okrService->getAll($perPage,$year_id);
+            $result = $okrService->getAll($perPage, $year_id);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -49,7 +56,7 @@ class OkrController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-    public function activityByIdprojectAdmin(OkrService $okrService,Request $request)
+    public function activityByIdprojectAdmin(OkrService $okrService, Request $request)
     {
 
         try {
@@ -70,7 +77,8 @@ class OkrController extends Controller
     }
 
 
-    public function updatestatusOkr(OkrService $okrService,Request $request){
+    public function updatestatusOkr(OkrService $okrService, Request $request)
+    {
         try {
             $id = $request->id;
             $result = $okrService->updateStatus($id);
@@ -88,7 +96,8 @@ class OkrController extends Controller
         }
     }
 
-    public function getActivityUserYear(OkrService $okrService,Request $request){
+    public function getActivityUserYear(OkrService $okrService, Request $request)
+    {
         try {
             $id_year = $request->id_year;
             $result = $okrService->getByIDUser($id_year);
@@ -107,12 +116,12 @@ class OkrController extends Controller
     }
 
 
-    public function getByIdYear(OkrService $okrService,Request $request)
+    public function getByIdYear(OkrService $okrService, Request $request)
     {
         try {
             $id_year = $request->id_year;
             $perPage = $request->input('per_page', 10);
-            $result = $okrService->getByIDYear($id_year,$perPage);
+            $result = $okrService->getByIDYear($id_year, $perPage);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -147,23 +156,52 @@ class OkrController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $id, OkrService $okrService)
     {
-        //
+        try {
+            // $id_project = $request->id_project;
+            $result = $okrService->getByID($id);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function update(OkrRequest $request, string $id, OkrService $okrService)
     {
-        //
+        try {
+            $studentCourseDTO = $this->okrRequestToOkrDTO($request, $id);
+            // dd($studentCourseDTO);
+            $result = $okrService->update($id, $studentCourseDTO);
+            $res = new HTTPCreatedResponse(['data' => $studentCourseDTO]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_CREATED);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function edit(Request $request, string $id)
     {
         //
     }
@@ -190,4 +228,3 @@ class OkrController extends Controller
         }
     }
 }
-

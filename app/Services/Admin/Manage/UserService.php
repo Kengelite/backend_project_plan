@@ -31,7 +31,7 @@ class UserService
         $user->name = $userDTO->name;
         $user->email = $userDTO->email;
         $user->password = bcrypt($userDTO->password);
-        $user->role = $userDTO->role;
+        $user->role = $userDTO->academicPosition;
         $user->academic_position = $userDTO->academicPosition;
         $user->id_position = $userDTO->idPosition;
         $user->save();
@@ -53,8 +53,10 @@ class UserService
 
         $user->name = $userDTO->name;
         $user->email = $userDTO->email;
-        $user->password = $userDTO->password;
-        $user->role = $userDTO->role;
+        if (!empty($userDTO->password)) {
+            $user->password = bcrypt($userDTO->password);
+        }
+        $user->role = $userDTO->academicPosition;
         $user->academic_position = $userDTO->academicPosition;
         $user->id_position = $userDTO->idPosition;
         $user->save();

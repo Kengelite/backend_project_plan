@@ -26,6 +26,20 @@ class ProjectService
         $project = Project::paginate(10)->withQueryString();
         return $project;
     }
+
+    public function getByIDYearDashborad($id)
+    {
+        $project_total = Project::where('id_year', $id)->count();
+
+        $projects_report = Project::where('id_year', $id)
+            ->where('status_report', '1')
+            ->count();
+
+        return [
+            'project_total' => $project_total,
+            'projects_report' => $projects_report,
+        ];
+    }
     public function getByID($id)
     {
         $project = Project::findOrFail($id);
@@ -82,10 +96,16 @@ class ProjectService
             ->with('department')
             ->with('Objective')
             ->with('projectUsers.user')
+            ->with('projectUsers.user.position')
+
             ->with('projectStyle')
             ->with('year')
             ->with('projectPrinciple')
             ->with('projectIndicator')
+            ->with('projectIndicator.unit')
+            ->with('projectOkr')
+            ->with('projectOkr.okr')
+            ->with('projectOkr.okr.unit')
             ->whereNull('deleted_at')
             ->where('id_action_plan', $id)
             ->orderBy('project_number')
@@ -114,6 +134,50 @@ class ProjectService
         return $projects;
     }
 
+
+    public function getByIDproject($id, $perPage)
+    {
+
+        $projects = Project::with('department')
+            // ->with('department')
+            ->with('Objective')
+            ->with('projectUsers.user')
+            ->with('projectUsers.user.position')
+
+            ->with('projectStyle')
+            ->with('year')
+            ->with('projectPrinciple')
+            ->with('projectIndicator')
+            ->with('projectIndicator.unit')
+            ->with('projectOkr')
+            ->with('projectOkr.okr')
+            ->with('projectOkr.okr.unit')
+            ->whereNull('deleted_at')
+            ->where('project_id', $id)
+            ->orderBy('project_number')
+            ->get();
+
+
+        // คำว่า clone ใน PHP (รวมถึงใน Laravel/Query Builder) หมายถึง การสร้างสำเนา (copy) ของ object เพื่อให้สามารถใช้งานหรือแก้ไขแยกจากต้นฉบับได้ โดยไม่กระทบกัน
+        // เพิ่ม count_activity และ count_activity_report แบบแยก query
+        // ช้ .getCollection() ดึง Collection ที่อยู่ใน paginator ออกมา เพื่อวนทำงานกับแต่ละแถว
+        $projects->transform(function ($project) {
+            // A. เตรียม query ของ activity ที่เกี่ยวข้องกับ project นี้
+            $activitiesQuery = DB::table('activity')
+                ->where('id_project', $project->project_id)
+                ->whereNull('deleted_at');
+
+            // B. นับจำนวนทั้งหมดของ activity ที่ผูกกับ project นี้
+            $project->count_activity = (clone $activitiesQuery)->count();
+            // C. นับเฉพาะ activity ที่ status_report = 1 (รายงานแล้ว)
+            $project->count_activity_report = (clone $activitiesQuery)
+                ->where('status_report', 1)
+                ->count();
+
+            return $project;
+        });
+        return $projects;
+    }
     public function updateStatus($id)
     {
         // ดึงข้อมูลที่ต้องการอัปเดตจากฐานข้อมูล
@@ -204,19 +268,19 @@ class ProjectService
             }
 
             // Style Activtiy Detail
-            $styleActivtiyDetailsDTO = $projectDTO->styleActivtiyDetailsDTO;
-            foreach ($styleActivtiyDetailsDTO as $key => $value) {
-                $styleActivtiyDetailDB = new StyleDetail();
-                $styleActivtiyDetailDB->id_style = $value->idStyle;
-                $styleActivtiyDetailDB->id_project =  $projectDB->project_id; //TODO ไม่มี id activity
-                $styleActivtiyDetailDB->save();
-            }
+            // $styleActivtiyDetailsDTO = $projectDTO->styleActivtiyDetailsDTO;
+            // foreach ($styleActivtiyDetailsDTO as $key => $value) {
+            //     $styleActivtiyDetailDB = new StyleDetail();
+            //     $styleActivtiyDetailDB->id_style = $value->idStyle;
+            //     $styleActivtiyDetailDB->id_project =  $projectDB->project_id; //TODO ไม่มี id activity
+            //     $styleActivtiyDetailDB->save();
+            // }
 
             // Objective
             $objectivesDTO = $projectDTO->ObjectivesDTO;
             foreach ($objectivesDTO as $key => $value) {
                 $objectiveDB = new Objective();
-                $objectiveDB->name_objective = $value->objectiveName;
+                $objectiveDB->objective_name = $value->objectiveName;
                 $objectiveDB->id_project = $projectDB->project_id;
                 $objectiveDB->save();
             }
@@ -289,6 +353,116 @@ class ProjectService
         });
 
         return  $projectDB;
+    }
+
+
+    public function update(ProjectDTO $projectDTO)
+    {
+        // ค้นหาโครงการที่ต้องการอัปเดต
+        $projectDB = Project::findOrFail($projectDTO->id); // ใช้ findOrFail แทน new Project()
+
+        DB::transaction(function () use ($projectDTO, $projectDB) {
+            // Action plan
+            // $actionPlanDTO = $projectDTO->actionPlanDTO;
+            // $actionPlanDB = ActionPlan::findOrFail($actionPlanDTO->actionPlanID);
+
+            // อัปเดตข้อมูลโครงการ
+            $projectDB->project_name = $projectDTO->projectName;
+            $projectDB->project_number = $projectDTO->projectNumber;
+            $projectDB->abstract = $projectDTO->abstract;
+            $projectDB->time_start = $projectDTO->timeStart;
+            $projectDB->time_end = $projectDTO->timeEnd;
+            $projectDB->location = $projectDTO->location;
+            $projectDB->budget = $projectDTO->budget;
+            // $projectDB->id_action_plan = $actionPlanDTO->actionPlanID;  // แก้ไขให้ใช้ actionPlanID
+            // $projectDB->detail_short = ""; // กรณีที่ไม่มีข้อมูลที่จะใส่
+            // $projectDB->spend_money = 0; // ค่าคงที่เริ่มต้น
+
+            $projectDB->id_department = $projectDTO->idDepartment;
+            $projectDB->result = $projectDTO->result;
+            $projectDB->id_year = $projectDTO->idYear;
+            $projectDB->obstacle = $projectDTO->obstacle;
+
+            // กรณีของ StyleDetail
+            // $styleDetailsDTO = $projectDTO->styleDetailsDTO;
+
+            // // หา style ที่ถูกลบแล้ว
+            // $existingStyleDetails = StyleDetail::where('id_project', $projectDB->project_id)
+            //     ->onlyTrashed()  // ใช้ onlyTrashed เพื่อดึงข้อมูลที่ถูกลบไปแล้ว
+            //     ->get();
+
+            // foreach ($existingStyleDetails as $styleDetail) {
+            //     // ตรวจสอบว่า style ใหม่มีหรือไม่
+            //     if (in_array($styleDetail->id_style, array_column($styleDetailsDTO, 'idStyle'))) {
+            //         // ถ้ามี ให้ยกเลิกการลบ
+            //         $styleDetail->restore(); // Undelete ข้อมูล
+            //     } else {
+            //         // ถ้าไม่มีใน array ที่ส่งมาให้ลบ
+            //         $styleDetail->delete();
+            //     }
+            // }
+
+            // // เพิ่มข้อมูลใหม่
+            // ----- เตรียมข้อมูล -----
+            $projectId          = $projectDB->project_id;
+            $styleDetailsDTO    = $projectDTO->styleDetailsDTO;          // array ของ obj ที่มาจากฟอร์ม
+            $incomingStyles     = collect($styleDetailsDTO)
+                ->pluck('idStyle')                   // ดึง id_style ที่ส่งมา
+                ->toArray();
+
+            // ----- ข้อมูลที่มีอยู่ใน DB -----
+            $existingStyles = StyleDetail::where('id_project', $projectId)
+                ->pluck('id_style')
+                ->toArray();
+
+            // ===== 1) เพิ่มอันที่ยังไม่มี =====
+            $toInsert = array_diff($incomingStyles, $existingStyles);
+
+            foreach ($toInsert as $styleId) {
+                StyleDetail::create([
+                    'id_project' => $projectId,
+                    'id_style'   => $styleId,
+                ]);
+            }
+
+            // ===== 2) ลบอันที่ผู้ใช้เอาออก =====
+            $toDelete = array_diff($existingStyles, $incomingStyles);
+
+            StyleDetail::where('id_project', $projectId)
+                ->whereIn('id_style', $toDelete)
+                ->delete();
+            // Principle
+
+            $projectId = $projectDB->project_id;
+            $principlesDTO = $projectDTO->principlesDTO;
+
+            // 1. ดึงรายการ principle_id ที่มีอยู่ใน DB
+            $existingPrinciples = ProjectPrinciple::where('id_project', $projectId)
+                ->pluck('id_principle')
+                ->toArray();
+
+            // 2. ดึงรายการ principle_id ที่รับเข้ามาใหม่
+            $incomingPrinciples = collect($principlesDTO)->pluck('namePriciples')->toArray();
+
+            // 3. หาอันที่ "ยังไม่มี" → เพิ่มเข้าไป
+            $toInsert = array_diff($incomingPrinciples, $existingPrinciples);
+            foreach ($toInsert as $principleId) {
+                ProjectPrinciple::create([
+                    'id_project'   => $projectId,
+                    'id_principle' => $principleId,
+                ]);
+            }
+
+            // 4. หาอันที่ "ไม่มีใน input แล้ว" → ลบออก
+            $toDelete = array_diff($existingPrinciples, $incomingPrinciples);
+            ProjectPrinciple::where('id_project', $projectId)
+                ->whereIn('id_principle', $toDelete)
+                ->delete();
+            // บันทึกการอัปเดต
+            $projectDB->save();
+        });
+
+        return $projectDB;
     }
 
     public function delete($id)

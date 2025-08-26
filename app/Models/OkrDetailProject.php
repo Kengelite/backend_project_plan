@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
+use Illuminate\Support\Str;
 class OkrDetailProject extends Model
 {
     use SoftDeletes;
@@ -47,4 +47,19 @@ class OkrDetailProject extends Model
         'id_project',
         'id_okr',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->{$model->getKeyName()})) {
+                $model->{$model->getKeyName()} = (string) Str::uuid();
+            }
+        });
+    }
+    public function okr()
+    {
+        return $this->belongsTo(Okr::class, 'id_okr'); // โดยที่ project_id คือ key ที่เชื่อมกัน
+    }
 }
