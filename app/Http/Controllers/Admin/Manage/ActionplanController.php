@@ -35,6 +35,26 @@ class ActionplanController extends Controller
     }
 
 
+    public function dataspendprice(ActionplanService $actionplanService, Request $request)
+    {
+        try {
+            $id_strategic = $request->id;
+            $result = $actionplanService->getdataspendprice($id_strategic);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
     public function actionplanByIdstrategic(ActionplanService $actionplanService, Request $request)
     {
 

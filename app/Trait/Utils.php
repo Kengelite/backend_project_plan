@@ -12,6 +12,7 @@ use App\Http\Requests\Admin\Manage\YearRequest;
 use App\Http\Requests\Admin\Manage\StrategicRequest;
 use App\Http\Requests\Admin\Manage\ActionplanRequest;
 use App\Http\Requests\Admin\Manage\ActivitydetailRequest;
+use App\Http\Requests\Admin\Manage\ActivityDetailSpendMoneyRequest;
 use App\Http\Requests\Admin\Manage\ProjectEditRequest;
 use App\Http\Requests\Admin\Manage\ActivityEditRequest;
 use App\Dto\ObstacleDTO;
@@ -31,11 +32,14 @@ use App\Dto\ActivityDTO;
 use App\Dto\EmployeeDTO;
 use App\Dto\IndicatorActivityDTO;
 use App\Dto\IndicatorDTO;
+use App\Dto\ActivitySpendMoneyDTO;
+use App\Dto\ActivitiyDetailSpendMoneyDTO;
 use App\Dto\ObjectiveDTO;
 use App\Dto\StyleActivtiyDetailDTO;
 use App\Dto\TeacherDTO;
 use App\Dto\ProjectEditDTO;
 use App\Dto\UserDTO;
+use App\Http\Requests\Admin\Manage\ActivitySpendMoneyRequest;
 use App\Http\Requests\Admin\Manage\UserRequest;
 use App\Http\Requests\Admin\Manage\OkrRequest;
 
@@ -78,6 +82,16 @@ trait Utils
             $indicatorDTO->goal = $value['goal'];
             $projectDTO->indicatorsDTO[] = $indicatorDTO;
         }
+
+        // ActivitiyDetailSpendMoney
+        // $ActivityDetailSpend = $request->input('ActivitiyDetailSpendMoney');
+        // foreach ($ActivityDetailSpend as $key => $value) {
+        //     $ActivityDetailSpendDTO = new ActivitiyDetailSpendMoneyDTO();
+        //     $ActivityDetailSpendDTO->detailName = $value['indicator_name'];
+        //     $ActivityDetailSpendDTO->idUnit = $value['unit_name']['value'];
+        //     // $ActivityDetailSpendDTO->goal = $value['goal'];
+        //     $projectDTO->ActivitiyDetailSpendMoneyDTO[] = $ActivityDetailSpendDTO;
+        // }
 
         //objective
         $objectives = $request->input('objective_activity');
@@ -141,6 +155,15 @@ trait Utils
             $projectDTO->styleActivtiyDetailsDTO[] = $styleActivtiyDetailDTO;
         }
 
+        // Activtiy Detail
+        $ActivtiyDetail = $request->input('ActivityDetailSpendMoney');
+        foreach ($ActivtiyDetail as $key => $value) {
+            $ActivitiySpendMoneyDTO = new ActivitySpendMoneyDTO();
+            $ActivitiySpendMoneyDTO->name = $value['name_spendmoney'];
+            $ActivitiySpendMoneyDTO->idUnit = $value['unit_name']['value'];
+
+            $projectDTO->ActivitiySpendMoneyDTO[] = $ActivitiySpendMoneyDTO;
+        }
 
         return $projectDTO;
     }
@@ -418,6 +441,14 @@ trait Utils
         $activityDetailDTO->report_data = $request->input('report_data');
         $activityDetailDTO->id_employee = $request->input('id_employee');
         $activityDetailDTO->id_activity = $request->input('id_activity');
+        $principles = $request->input('activitiydetailspendmoney', []);
+        foreach ($principles as $key => $value) {
+            $dataDTO = new ActivitiyDetailSpendMoneyDTO();
+            $dataDTO->amount = $value['amount'];
+            $dataDTO->price = $value['price'];
+            $dataDTO->id_activity_spendmoney = $value['spendmoney_id'];
+            $activityDetailDTO->ActivitiyDetailSpendMoneyDTO[] = $dataDTO;
+        }
         return $activityDetailDTO;
     }
 
@@ -487,6 +518,56 @@ trait Utils
         $dataDTO->enddate = $request->input('end_date');
         $dataDTO->idunit = $request->input('id_unit');
         $dataDTO->idyear = $request->input('id_year');
+
+
+        // employee
+        $employees = $request->input('employee');
+        foreach ($employees as $key => $value) {
+            $employeeDTO = new EmployeeDTO();
+            $employeeDTO->idUser = $value['id'];
+            $employeeDTO->type = 1;
+            if ($key == 0) {
+                $employeeDTO->main = 1;
+            } else {
+                $employeeDTO->main = 0;
+            }
+            $dataDTO->employeesDTO[] = $employeeDTO;
+        }
+
+        // teacher
+        $teachers = $request->input('teacher');
+        foreach ($teachers as $key => $value) {
+            $teacherDTO = new TeacherDTO();
+            $teacherDTO->idUser = $value['id'];
+            $teacherDTO->type = 2;
+            if ($key == 0) {
+                $teacherDTO->main = 1;
+            } else {
+                $teacherDTO->main = 0;
+            }
+            $dataDTO->teachersDTO[] = $teacherDTO;
+        }
         return $dataDTO;
+    }
+
+
+    public function activitySpendMoneyRequestToActivitySpendDTO(ActivitySpendMoneyRequest $request)
+    {
+        $strategicDTO = new ActivitySpendMoneyDTO();
+
+        $strategicDTO->activityId = $request->input('id_activity');
+        $strategicDTO->name = $request->input('activity_spendmoney_name');
+        $strategicDTO->idUnit = $request->input('id_unit');
+        return $strategicDTO;
+    }
+
+    public function activityDetailSpendMoneyRequestToActivityDetaiSpendMoneylDTO(ActivityDetailSpendMoneyRequest $request)
+    {
+        $activityDetailDTO = new ActivitiyDetailSpendMoneyDTO();
+        $activityDetailDTO->amount =  $request->input('amount');
+        $activityDetailDTO->price =  $request->input('price');
+        $activityDetailDTO->id_activity_spendmoney =  $request->input('id_activity_spendmoney');
+        $activityDetailDTO->id_activity_detail =  $request->input('id_activity_detail');
+        return $activityDetailDTO;
     }
 }

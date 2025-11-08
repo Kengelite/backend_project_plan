@@ -4,7 +4,7 @@ namespace App\Dto;
 
 class OkrDTO
 {
-    public string $okrid;
+    public string $okrId;
     public string $okrnumber;
     public string $okrname;
     public string $goal;
@@ -14,4 +14,10 @@ class OkrDTO
     public string $enddate;
     public string $idunit;
     public string $idyear;
+
+    /** @var EmployeeDTO[]|null */
+    public array $employeesDTO;
+
+    /** @var TeacherDTO[]|null */
+    public array $teachersDTO;
 }

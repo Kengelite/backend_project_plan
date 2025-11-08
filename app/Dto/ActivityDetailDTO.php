@@ -14,4 +14,7 @@ class ActivityDetailDTO
     public string $report_data;
     public string $id_employee;
     public string $id_activity;
+
+    /** @var ActivitiyDetailSpendMoneyDTO[]|null */
+    public array $ActivitiyDetailSpendMoneyDTO;
 }

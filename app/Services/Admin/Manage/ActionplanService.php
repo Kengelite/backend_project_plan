@@ -22,6 +22,16 @@ class ActionplanService
         return $actionPlan;
     }
 
+    public function getdataspendprice($id)
+    {
+        $result = ActionPlan::where('id_strategic', $id)
+            ->whereNull('deleted_at')
+            ->selectRaw('SUM(budget) as total_budget, SUM(spend_money) as total_spend')
+            ->first();
+
+        return   $result;
+    }
+
     public function getByIDstrategic($id, $perPage)
     {
 

@@ -148,11 +148,25 @@ class OkrController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(OkrRequest $request, OkrService $okrService)
     {
-        //
+        try {
+            $studentCourseDTO = $this->okrRequestToOkrDTO($request);
+            // dd($studentCourseDTO);
+            $result = $okrService->store($studentCourseDTO);
+            $res = new HTTPCreatedResponse(['data' => $studentCourseDTO]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_CREATED);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
-
     /**
      * Display the specified resource.
      */

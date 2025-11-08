@@ -6,6 +6,7 @@ use App\Dto\ActivityDTO;
 use App\Models\ActionPlan;
 use App\Models\Activity;
 use App\Models\ActivityPrinciple;
+use App\Models\ActivitySpendmoney;
 use App\Trait\Utils;
 use App\Models\ActivityUser;
 use App\Models\IndicatorActivity;
@@ -13,6 +14,7 @@ use App\Models\Objective;
 use App\Models\ObjectiveActivity;
 use App\Models\OkrDetailActivity;
 use App\Models\ProjectUser;
+use App\Models\Project;
 use App\Models\StyleActivtiyDetail;
 use Illuminate\Notifications\Action;
 use Illuminate\Support\Facades\Auth;
@@ -25,6 +27,16 @@ class ActivityService
     {
         $activity = Activity::paginate(10)->withQueryString();
         return $activity;
+    }
+
+    public function getdataspendprice($id)
+    {
+        $result = Activity::where('id_project', $id)
+            ->whereNull('deleted_at')
+            ->selectRaw('SUM(budget) as total_budget, SUM(spend_money) as total_spend')
+            ->first();
+
+        return   $result;
     }
     public function getByID($id)
     {
@@ -40,6 +52,8 @@ class ActivityService
             ->with('activityIndicator')
             ->with('activityIndicator.unit')
             ->with('activityOkr')
+            ->with('activityspendmoney')
+            ->with('activityspendmoney.unit')
             ->with('activityOkr.okr')
             ->with('activityOkr.okr.unit')
             ->whereNull('deleted_at')
@@ -48,7 +62,24 @@ class ActivityService
             ->get();
         return $activity;
     }
+    public function getBudgetAll($idProject)
+    {
+        $project = Project::where('project_id', $idProject)
+            ->lockForUpdate()
+            ->firstOrFail();
 
+        $projectBudget = (float) $project->budget;
+        $usedBudget = (float) Activity::where('id_project', $project->project_id)->sum('budget');
+
+
+        $data = [
+            'budget_project' => $projectBudget,
+            'used_budget'    => $usedBudget,
+            'remaining'      => $projectBudget - $usedBudget,
+        ];
+
+        return $data;
+    }
     public function getByIDforSendEmail($id)
     {
         return Activity::where('activity_id', $id)->first();
@@ -86,21 +117,33 @@ class ActivityService
     }
     public function getByIDactivityAdmin($id, $perPage)
     {
-        $activities = Activity::with('department')
-            ->with('ObjectiveActivity')
-            ->with('ActivityUsers.user')
-            ->with('ActivityUsers.user.position')
-
-            ->with('activityStyle')
-            ->with('year')
-            ->with('activityPrinciple')
-            ->with('activityIndicator')
-            ->with('activityIndicator.unit')
-            ->with('activityOkr')
-            ->with('activityOkr.okr')
-            ->with('activityOkr.okr.unit')
+        $activities = Activity::with([
+            'department',
+            'ObjectiveActivity',
+            'ActivityUsers.user',
+            'ActivityUsers.user.position',
+            'activityspendmoney',
+            'activityspendmoney.unit',
+            'activityspendmoney.ActivityDetailSpendmoney' => function ($q) {
+                $q->whereNull('deleted_at');
+            },
+            'project',
+            'project.actionplan',
+            'project.actionplan.strategic',
+            'activityStyle',
+            'year',
+            'activityPrinciple',
+            'activityIndicator',
+            'activityIndicator.unit',
+            'activityOkr',
+            'activityOkr.okr',
+            'activityOkr.okr.unit',
+        ])
             ->whereNull('deleted_at')
             ->where('id_project', $id)
+            ->whereHas('activityspendmoney.ActivityDetailSpendmoney', function ($q) {
+                $q->whereNull('deleted_at');
+            })
             ->orderBy('id')
             ->paginate($perPage)
             ->withQueryString();
@@ -154,8 +197,10 @@ class ActivityService
     {
 
         $project = Activity::where('id_year', $id)
+            ->with('project')
+            ->with('project.actionplan')
+            ->with('project.actionplan.strategic')
             ->orderBy('activity_id')
-            // ->with('strategic')
             ->paginate($perPage);
 
         return $project;
@@ -188,6 +233,25 @@ class ActivityService
 
         DB::transaction(function () use ($projectDTO, $activityDB) {
             // Action plan
+
+            $project = Project::where('project_id', $projectDTO->idProject)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $projectBudget = (float) $project->budget;
+            $newActivityBudget = (float) ($projectDTO->budget ?? 0);
+            $usedBudget = (float) Activity::where('id_project', $project->project_id)->sum('budget');
+
+            $newTotal = $usedBudget + $newActivityBudget;
+
+            if ($newTotal > $projectBudget) {
+                abort(
+                    422,
+                    'ยอดงบประมาณรวมของกิจกรรม (' . number_format($newTotal, 2) .
+                        ') เกินงบประมาณของโครงการ (' . number_format(($newTotal - $projectBudget), 2) . ')'
+                );
+            }
+
             $actionPlanDTO = $projectDTO->actionPlanDTO;
             $actionPlanDB = ActionPlan::findOrFail($actionPlanDTO->actionPlanID);
             // $actionPlanDB->save();
@@ -198,7 +262,7 @@ class ActivityService
             $activityDB->abstract = $projectDTO->abstract;
             $activityDB->time_start = $projectDTO->timeStart;
             $activityDB->time_end = $projectDTO->timeEnd;
-            // $activityDB->location = $projectDTO->location;
+            $activityDB->location = $projectDTO->location;
             // $activityDB->id_action_plan = $actionPlanDTO->actionPlanID;
             $activityDB->budget = $projectDTO->budget;
             // $activityDB->OKR_id = "";
@@ -287,6 +351,17 @@ class ActivityService
                 $indicatorDB->goal =  $value->goal;
                 $indicatorDB->id_activity = $activityDB->activity_id;
                 $indicatorDB->id_unit =  $value->idUnit;
+                $indicatorDB->save();
+            }
+
+
+            // ActivitiySpendMoney
+            $ActiivitySpendDTO = $projectDTO->ActivitiySpendMoneyDTO;
+            foreach ($ActiivitySpendDTO as $key => $value) {
+                $indicatorDB = new ActivitySpendmoney();
+                $indicatorDB->activity_spendmoney_name =  $value->name;
+                $indicatorDB->id_unit =  $value->idUnit;
+                $indicatorDB->id_activity = $activityDB->activity_id;
                 $indicatorDB->save();
             }
 

@@ -21,4 +21,8 @@ class ActivityDTO extends ProjectDTO
 
     /** @var PrincipleDTO[]|null */
     public array $principlesDTO;
+
+
+    /** @var ActivitiySpendMoneyDTO[]|null */
+    public array $ActivitiySpendMoneyDTO;
 }

@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\Manage\StrategicController;
 use App\Http\Controllers\Admin\Manage\ActionplanController;
 use App\Http\Controllers\Admin\Manage\ActivityController;
 use App\Http\Controllers\Admin\Manage\ActivitydetailController;
+use App\Http\Controllers\Admin\Manage\ActivityDetailSpendMoneyController;
 use App\Http\Controllers\Admin\Manage\ProjectController;
 use App\Http\Controllers\Admin\Manage\ProjectUserController;
 use App\Http\Controllers\Admin\Manage\YearController;
@@ -24,10 +25,14 @@ use App\Http\Controllers\Admin\Manage\OkrProjectController;
 use App\Http\Controllers\Admin\Manage\ObjectiveActivityController;
 use App\Http\Controllers\Admin\Manage\IndicatorActivityController;
 use App\Http\Controllers\Admin\Manage\UserActivityController;
+use App\Http\Controllers\Admin\Manage\UserOkrController;
+use App\Http\Controllers\Admin\Manage\ActivitySpendMoneyController;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\TestMail;
+use App\Models\ActivityDetailSpendmoney;
 
 Route::group(['prefix' => '/v1'], function () {
     // Route::group( 'prefix' => '/admin'], function () {
@@ -43,6 +48,8 @@ Route::group(['prefix' => '/v1'], function () {
         Route::post('okr', [OkrController::class, 'OkeUser']);
         Route::post('updatestatusokr', [OkrController::class, 'updatestatusOkr']);
         Route::delete('deleteokr', [OkrController::class, 'destroy']);
+
+        Route::resource('okruser', UserOkrController::class);
 
         Route::resource('styleall', TypeController::class);
         Route::get('style', [TypeController::class, 'styleUser']);
@@ -81,14 +88,16 @@ Route::group(['prefix' => '/v1'], function () {
         Route::delete('deletestrategic', [StrategicController::class, 'destroy']);
 
 
+        Route::resource('actionplan', ActionplanController::class);
         Route::post('actionplanbyidstrategic', [ActionplanController::class, 'actionplanByIdstrategic']);
         Route::post('actionplanallbyidyear', [ActionplanController::class, 'getByIdYear']);
-        Route::resource('actionplan', ActionplanController::class);
+        Route::post('actionplanprice', [ActionplanController::class, 'dataspendprice']);
         Route::post('updatestatusactionplan', [ActionplanController::class, 'updatestatusActionplan']);
         Route::delete('deleteactionplan', [ActionplanController::class, 'destroy']);
 
 
         Route::resource('project', ProjectController::class);
+        Route::post('projectprice', [ProjectController::class, 'dataspendprice']);
         Route::post('projectbyidactionplan', [ProjectController::class, 'projectByIdactionplan']);
         Route::post('updatestatusproject', [ProjectController::class, 'updatestatusProject']);
         Route::delete('deleteproject', [ProjectController::class, 'destroy']);
@@ -99,22 +108,24 @@ Route::group(['prefix' => '/v1'], function () {
 
 
         Route::resource('activity', ActivityController::class);
+        Route::post('activityprice', [ActivityController::class, 'dataspendprice']);
         Route::post('activitybyidproject', [ActivityController::class, 'activityByIdproject']);
         Route::post('activitybyidprojectadmin', [ActivityController::class, 'activityByIdprojectAdmin']);
         Route::post('updatestatusactivity', [ActivityController::class, 'updatestatusActivity']);
         Route::post('activityuserallbyidyear', [ActivityController::class, 'getActivityUserYear']);
+        Route::post('activitydetailbudget', [ActivityController::class, 'getactivitydetailbudget']);
         Route::delete('deleteactivity', [ActivityController::class, 'destroy']);
         Route::post('activityallbyidyear', [ActivityController::class, 'getByIdYear']);
 
 
 
         Route::resource('activitydetail', ActivitydetailController::class);
+        Route::post('activitydetailprice', [ActivitydetailController::class, 'dataspendprice']);
         Route::post('activitydetailbyidactivity', [ActivitydetailController::class, 'activitydetailByIdactivity']);
         Route::post('activitydetailbyidactivityadmin', [ActivitydetailController::class, 'activitydetailByIdactivityAdmin']);
         Route::post('updatestatusactivitydetail', [ActivitydetailController::class, 'updatestatusActivityDetail']);
         Route::delete('deleteactivitydetail', [ActivitydetailController::class, 'destroy']);
-
-
+        Route::get('activitydetail/price/{id}', [ActivitydetailController::class, 'datailprice']);
 
         Route::resource('projectuserall', ProjectUserController::class);
         Route::post('projectuserallbyiduseradmin', [ProjectUserController::class, 'getByIdUserYearAdmin']);
@@ -152,5 +163,10 @@ Route::group(['prefix' => '/v1'], function () {
         Route::post('addindicatorproject', [IndicatorController::class, 'store']);
         Route::post('editindicatorproject', [IndicatorController::class, 'update']);
         Route::post('deleteindicatorproject', [IndicatorController::class, 'destroy']);
+
+        Route::resource('activityspendmoney', ActivitySpendMoneyController::class);
+        Route::get('/activityspendmoney/activity/{id}', [ActivitySpendmoneyController::class, 'getbyidactivity']);
+
+        Route::resource('activitydetailspendmoney', ActivityDetailSpendMoneyController::class);
     });
 });

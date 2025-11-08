@@ -79,9 +79,17 @@ class Activity extends Model
     {
         return $this->hasMany(StyleActivtiyDetail::class, 'id_activity');
     }
+     public function activityspendmoney()
+    {
+        return $this->hasMany(ActivitySpendmoney::class, 'id_activity');
+    }
     public function year()
     {
         return $this->belongsTo(year::class, 'id_year'); // โดยที่ project_id คือ key ที่เชื่อมกัน
+    }
+    public function project()
+    {
+        return $this->belongsTo(Project::class, 'id_project'); // โดยที่ project_id คือ key ที่เชื่อมกัน
     }
     public function activityIndicator()
     {

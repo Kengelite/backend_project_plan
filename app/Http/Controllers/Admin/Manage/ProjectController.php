@@ -34,7 +34,24 @@ class ProjectController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
+    public function dataspendprice(ProjectService $actionplanService, Request $request)
+    {
+        try {
+            $id_strategic = $request->id;
+            $result = $actionplanService->getdataspendprice($id_strategic);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
     public function projectByIdactionplan(ProjectService $projectService, Request $request)
     {
 
@@ -152,9 +169,22 @@ class ProjectController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $id, ProjectService $activityService)
     {
-        //
+        try {
+            $result = $activityService->getByID($id);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
     }
 
     /**
@@ -168,12 +198,12 @@ class ProjectController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(ProjectEditRequest $request, ProjectService $projectService,string $id)
+    public function update(ProjectEditRequest $request, ProjectService $projectService, string $id)
     {
         try {
-            $studentCourseDTO = $this->projectEditRequestToProjectDTO($request,$id);
+            $studentCourseDTO = $this->projectEditRequestToProjectDTO($request, $id);
             // dd($studentCourseDTO);
-            $result = $projectService->update($studentCourseDTO,$id);
+            $result = $projectService->update($studentCourseDTO, $id);
             $res = new HTTPCreatedResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_CREATED);
         } catch (\App\Exceptions\CustomException $e) {

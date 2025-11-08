@@ -55,6 +55,10 @@ class ActivityRequest extends FormRequest
             'teacher' => 'required|array',
             'teacher.*.id' => 'required|string',
             'teacher.*.name' => 'required|string',
+            'ActivityDetailSpendMoney' => 'required|array',
+            'ActivityDetailSpendMoney.*.id' => 'required|integer',
+            'ActivityDetailSpendMoney.*.name_spendmoney' => 'required|string',
+            'ActivityDetailSpendMoney.*.unit_name.label' => 'required|string',
         ];
     }
 
@@ -142,6 +146,15 @@ class ActivityRequest extends FormRequest
             'teacher.array' => 'อาจารย์ต้องเป็นรายการ',
             'teacher.*.id.required' => 'กรุณาระบุ ID ของอาจารย์',
             'teacher.*.name.required' => 'กรุณาระบุชื่อของอาจารย์',
+
+            'ActivityDetailSpendMoney.required' => 'กรุณากรอกรายละเอียดค่าใช้จ่าย',
+            'ActivityDetailSpendMoney.array' => 'รายละเอียดค่าใช้จ่ายต้องเป็นรายการ',
+            'ActivityDetailSpendMoney.*.id.required' => 'กรุณาระบุ ID รายละเอียด',
+            'ActivityDetailSpendMoney.*.id.integer' => 'ID รายละเอียดต้องเป็นตัวเลข',
+            'ActivityDetailSpendMoney.*.name_spendmoney.required' => 'กรุณาระบุชื่อ',
+            'ActivityDetailSpendMoney.*.name_spendmoney.string' => 'ชื่อต้องเป็นข้อความ',
+            'ActivityDetailSpendMoney.*.unit_name.value.required' => 'กรุณาระบุหน่วยนับ',
+            'ActivityDetailSpendMoney.*.unit_name.value.string' => 'หน่วยนับต้องเป็นข้อความ',
         ];
     }
 }

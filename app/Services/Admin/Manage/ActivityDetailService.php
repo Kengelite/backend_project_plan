@@ -4,6 +4,8 @@ namespace App\Services\Admin\Manage;
 
 use App\Dto\ActivityDetailDTO;
 use App\Models\ActivityDetail;
+
+use App\Models\ActivityDetailSpendmoney;
 use App\Models\Activity;
 use App\Models\Project;
 use App\Models\ActionPlan;
@@ -11,6 +13,7 @@ use App\Models\Strategic;
 use App\Trait\Utils;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use App\Models\ActivitySpendmoney;
 
 class ActivityDetailService
 {
@@ -23,6 +26,42 @@ class ActivityDetailService
     public function getByID($id)
     {
         $activityDetail = ActivityDetail::findOrFail($id);
+        return $activityDetail;
+    }
+
+    public function getdataspendprice($id)
+    {
+        $result = ActivityDetail::where('id_activity', $id)
+            ->whereNull('deleted_at')
+            ->selectRaw('SUM(price) as total_price, count(*) as count_report')
+            ->first();
+
+        return   $result;
+    }
+    public function getPriceBalanceByID($id)
+    {
+        // $activityDetail = ActivityDetail::
+
+        // ->findOrFail($id);
+        // $sumPrice = DB::table('Activity_detail')
+        //     ->where('id_activity', $id)
+        //     ->sum('price');
+
+        $activityDetail = DB::table('Activity')
+            ->where('activity_id', $id)
+            ->select('budget', 'spend_money')
+            ->get();
+
+        return $activityDetail;
+    }
+    public function show($id)
+    {
+        $activityDetail = ActivityDetail::with('ActivityDetailSpendmoney')
+            ->with('ActivityDetailSpendmoney.ActivitySpendmoney')
+            ->with('ActivitySpendmoney')
+            // ->with('ActivitySpendmoney.unit')
+            ->with('ActivityDetailSpendmoney.ActivitySpendmoney.unit')
+            ->findOrFail($id);
         return $activityDetail;
     }
     public function getByIDactivityAdmin($id, $perPage)
@@ -119,7 +158,7 @@ class ActivityDetailService
             $activityDetailDB->station = $activityDetailDTO->station;
 
             $activityDetailDB->report_data = $activityDetailDTO->report_data;
-            // $activityDetailDB->id_employee = $activityDetailDTO->id_employee;
+            $activityDetailDB->id_employee = $activityDetailDTO->id_employee;
             $activityDetailDB->id_activity = $activityDetailDTO->id_activity;
 
             $activityDetailDB->save();
@@ -148,6 +187,17 @@ class ActivityDetailService
             $strategic->spend_money += $activityDetailDTO->price;
             $strategic->save();
             $result['strategic_spend_money'] = $strategic->budget  - $strategic->spend_money;
+
+            // ActivityDetailSpendmoney
+            $okrDetailProjectsDTO = $activityDetailDTO->ActivitiyDetailSpendMoneyDTO;
+            foreach ($okrDetailProjectsDTO as $key => $value) {
+                $okrDetailProjectDB = new ActivityDetailSpendmoney();
+                $okrDetailProjectDB->id_activity_detail = $activityDetailDB->activity_detail_id;
+                $okrDetailProjectDB->id_activity_spendmoney = $value->id_activity_spendmoney;
+                $okrDetailProjectDB->price = $value->price;
+                $okrDetailProjectDB->amount = $value->amount;
+                $okrDetailProjectDB->save();
+            }
         });
 
         return response()->json([
@@ -162,12 +212,12 @@ class ActivityDetailService
         $activityDetailDB = DB::transaction(function () use ($activityDetailDTO, $id, &$result) {
             $activityDetailDB = ActivityDetail::where('activity_detail_id', $id)->firstOrFail();
 
-            // ❗ ดึงราคาเดิมก่อนอัปเดต
+            //  ดึงราคาเดิมก่อนอัปเดต
             $oldPrice = floatval($activityDetailDB->price);
             $newPrice = floatval($activityDetailDTO->price);
             $priceDiff = $newPrice - $oldPrice;
 
-            // ✅ อัปเดตข้อมูล activity_detail
+            //  อัปเดตข้อมูล activity_detail
             $activityDetailDB->detail = $activityDetailDTO->detail;
             $activityDetailDB->price = $newPrice;
             $activityDetailDB->start_date = $activityDetailDTO->start_date;
@@ -179,25 +229,64 @@ class ActivityDetailService
             $activityDetailDB->id_activity = $activityDetailDTO->id_activity;
             $activityDetailDB->save();
 
-            // ✅ อัปเดต spend_money ของ Activity
+
+            // ดึงรายการเดิมทั้งหมดที่ผูกกับ activity_detail_id
+            $existingSpendMoneyIds = ActivityDetailSpendmoney::where('id_activity_detail', $activityDetailDB->activity_detail_id)
+                ->pluck('activity_detail_spendmoney_id')
+                ->toArray();
+
+            $newIds = []; // เก็บ id ที่ถูกส่งมา
+
+            foreach ($activityDetailDTO->ActivitiyDetailSpendMoneyDTO as $value) {
+                if (!empty($value->id)) {
+                    //  กรณีมี id -> update
+                    $okrDetailProjectDB = ActivityDetailSpendmoney::where('activity_detail_spendmoney_id', $value->id)
+                        ->where('id_activity_detail', $activityDetailDB->activity_detail_id)
+                        ->first();
+
+                    if ($okrDetailProjectDB) {
+                        $okrDetailProjectDB->id_activity_spendmoney = $value->id_activity_spendmoney;
+                        $okrDetailProjectDB->price = $value->price;
+                        $okrDetailProjectDB->amount = $value->amount;
+                        $okrDetailProjectDB->save();
+                        $newIds[] = $okrDetailProjectDB->activity_detail_spendmoney_id;
+                    }
+                } else {
+                    //  ไม่มี id -> insert ใหม่
+                    $okrDetailProjectDB = new ActivityDetailSpendmoney();
+                    $okrDetailProjectDB->id_activity_detail = $activityDetailDB->activity_detail_id;
+                    $okrDetailProjectDB->id_activity_spendmoney = $value->id_activity_spendmoney;
+                    $okrDetailProjectDB->price = $value->price;
+                    $okrDetailProjectDB->amount = $value->amount;
+                    $okrDetailProjectDB->save();
+                    $newIds[] = $okrDetailProjectDB->activity_detail_spendmoney_id;
+                }
+            }
+
+            //  ลบ record ที่มีอยู่ แต่ไม่ได้ส่งมา
+            $toDelete = array_diff($existingSpendMoneyIds, $newIds);
+            if (!empty($toDelete)) {
+                ActivityDetailSpendmoney::whereIn('activity_detail_spendmoney_id', $toDelete)->delete();
+            }
+            //  อัปเดต spend_money ของ Activity
             $activity = Activity::findOrFail($activityDetailDTO->id_activity);
             $activity->spend_money = floatval($activity->spend_money) + $priceDiff;
             $activity->save();
             $result['activity_spend_money'] = $activity->budget  - $activity->spend_money;
 
-            // ✅ อัปเดต Project
+            //  อัปเดต Project
             $project = Project::findOrFail($activity->id_project);
             $project->spend_money = floatval($project->spend_money) + $priceDiff;
             $project->save();
             $result['project_spend_money'] = $project->budget  - $project->spend_money;
 
-            // ✅ อัปเดต ActionPlan
+            //  อัปเดต ActionPlan
             $actionplan = ActionPlan::findOrFail($project->id_action_plan);
             $actionplan->spend_money = floatval($actionplan->spend_money) + $priceDiff;
             $actionplan->save();
             $result['actionplan_spend_money'] = $actionplan->budget  - $actionplan->spend_money;
 
-            // ✅ อัปเดต Strategic
+            //  อัปเดต Strategic
             $strategic = Strategic::findOrFail($actionplan->id_strategic);
             $strategic->spend_money = floatval($strategic->spend_money) + $priceDiff;
             $strategic->save();

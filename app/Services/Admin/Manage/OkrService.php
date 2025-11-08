@@ -7,6 +7,7 @@ use App\Dto\OkrDTO;
 use App\Models\Okr;
 use App\Trait\Utils;
 use App\Models\ActivityUser;
+use App\Models\OkrUser;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -79,7 +80,15 @@ class OkrService
     public function getByID($id)
     {
         $activity = Okr::where('okr_id', $id)
-            ->with("year")
+            ->with([
+                'year',
+                'OkrUsers' => function ($q) {
+                    $q->orderByDesc('main')  //  main=1 มาก่อน
+                        ->orderBy('created_at'); // (เสริม) กันกรณีค่า main เท่ากัน
+                },
+                'OkrUsers.user',
+                'OkrUsers.user.position',
+            ])
             ->firstOrFail();
 
         return $activity;
@@ -169,8 +178,77 @@ class OkrService
             $okr->id_year       = $dataDTO->idyear;
 
             $okr->save();
+            // Employee
+            // $employeesDTO = $dataDTO->employeesDTO;
+            // foreach ($employeesDTO as $key => $value) {
+            //     $projectUserDB = new OkrUser();
+            //     $projectUserDB->type = $value->type;
+            //     $projectUserDB->main = $value->main;
+            //     // $projectUserDB->status = $value->status;
+            //     $projectUserDB->id_user = $value->idUser;
+            //     // $projectUserDB->id_project = $dataDTO->okrId;
+            //     $projectUserDB->id_year = $value->idYear ?? 0;
+            //     $projectUserDB->save();
+            // }
 
+            // Teacher
+            // $teachersDTO = $dataDTO->teachersDTO;
+            // foreach ($teachersDTO as $key => $value) {
+            //     $projectUserDB = new OkrUser();
+            //     $projectUserDB->type = $value->type;
+            //     $projectUserDB->main = $value->main;
+            //     // $projectUserDB->status = $value->status;
+            //     $projectUserDB->id_user = $value->idUser;
+            //     // $projectUserDB->id_project = $dataDTO->okr_id;
+            //     $projectUserDB->id_year = $value->idYear ?? 0;
+            //     $projectUserDB->save();
+            // }
             return $okr;
+        });
+    }
+
+    public function store(OkrDTO $dataDTO)
+    {
+        $DB = new Okr();
+        return DB::transaction(function () use ($dataDTO, $DB) {
+            // $okr = okr::where('okr_id', $id)->firstOrFail();
+
+            $DB->okr_number    = $dataDTO->okrnumber;
+            $DB->okr_name      = $dataDTO->okrname;
+            // $DB->status_report = $dataDTO->status_report ?? $DB->status_report;
+            $DB->goal          = $dataDTO->goal;
+            $DB->result        = $dataDTO->result;
+            $DB->report_data = $dataDTO->reportdata ?? '';
+            $DB->start_date    = $dataDTO->startdate;
+            $DB->end_date      = $dataDTO->enddate;
+            $DB->id_unit       = $dataDTO->idunit;
+            $DB->id_year       = $dataDTO->idyear;
+
+            $DB->save();
+            // Employee
+            $employeesDTO = $dataDTO->employeesDTO;
+            foreach ($employeesDTO as $key => $value) {
+                $projectUserDB = new OkrUser();
+                $projectUserDB->type = $value->type;
+                $projectUserDB->main = $value->main;
+                $projectUserDB->id_user = $value->idUser;
+                $projectUserDB->id_okr = $DB->okr_id;
+                $projectUserDB->id_year = $value->idYear ?? 0;
+                $projectUserDB->save();
+            }
+
+            // Teacher
+            $teachersDTO = $dataDTO->teachersDTO;
+            foreach ($teachersDTO as $key => $value) {
+                $projectUserDB = new OkrUser();
+                $projectUserDB->type = $value->type;
+                $projectUserDB->main = $value->main;
+                $projectUserDB->id_user = $value->idUser;
+                $projectUserDB->id_okr = $DB->okr_id;
+                $projectUserDB->id_year = $value->idYear ?? 0;
+                $projectUserDB->save();
+            }
+            return $DB;
         });
     }
 }

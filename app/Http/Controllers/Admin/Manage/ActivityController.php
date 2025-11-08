@@ -75,13 +75,51 @@ class ActivityController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
+    public function dataspendprice(ActivityService $actionplanService, Request $request)
+    {
+        try {
+            $id_strategic = $request->id;
+            $result = $actionplanService->getdataspendprice($id_strategic);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
 
     public function updatestatusActivity(ActivityService $activityService, Request $request)
     {
         try {
             $activity_id = $request->activity_id;
             $result = $activityService->updateStatus($activity_id);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    public function getactivitydetailbudget(ActivityService $activityService, Request $request)
+    {
+        try {
+
+            $project_id = $request->project_id;
+            $result = $activityService->getBudgetAll($project_id);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {

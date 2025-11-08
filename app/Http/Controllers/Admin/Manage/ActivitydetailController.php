@@ -33,14 +33,48 @@ class ActivitydetailController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
+     public function dataspendprice(ActivityDetailService $actionplanService, Request $request)
+    {
+        try {
+            $id_strategic = $request->id;
+            $result = $actionplanService->getdataspendprice($id_strategic);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    public function datailprice(ActivityDetailService $activitydetailService, string $id)
+    {
+        try {
+            $result = $activitydetailService->getPriceBalanceByID($id);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
     public function activitydetailByIdactivity(ActivityDetailService $activitydetailService, Request $request)
     {
 
         try {
             $id_activity = $request->id_activity;
             $perPage = $request->input('per_page', 10);
-            $result = $activitydetailService->getByIDactivity($id_activity,$perPage );
+            $result = $activitydetailService->getByIDactivity($id_activity, $perPage);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -98,7 +132,7 @@ class ActivitydetailController extends Controller
     public function destroy(ActivityDetailService $activityDetailService, Request $request)
     {
         try {
-            
+
             $id_activitydetail = $request->id_activitydetail;
             $result = $activityDetailService->delete($id_activitydetail);
             $res = new HTTPSuccessResponse(['data' => $result]);
@@ -142,6 +176,26 @@ class ActivitydetailController extends Controller
             $result = $activityDetailService->update($studentCourseDTO, $id);
             // $result = $request->department_name;
             $res = new HTTPCreatedResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_CREATED);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function show(ActivityDetailService $activityDetailService, string $id)
+    {
+        try {
+            // $studentCourseDTO = $this->activityDetailRequestToActivityDetailDTO($request);
+            $result = $activityDetailService->show($id);
+            // $result = $request->department_name;
+            $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_CREATED);
         } catch (\App\Exceptions\CustomException $e) {
             return response()->json([

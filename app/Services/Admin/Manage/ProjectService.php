@@ -45,6 +45,17 @@ class ProjectService
         $project = Project::findOrFail($id);
         return $project;
     }
+
+
+    public function getdataspendprice($id)
+    {
+        $result = Project::where('id_action_plan', $id)
+            ->whereNull('deleted_at')
+            ->selectRaw('SUM(budget) as total_budget, SUM(spend_money) as total_spend')
+            ->first();
+
+        return   $result;
+    }
     public function getByIDactionplan($id, $perPage)
     {
         // $project = Project::where('id_action_plan', $id)
@@ -93,6 +104,9 @@ class ProjectService
 
 
         $projects = Project::with('department')
+            ->with('activity')
+            ->with('activity.activityspendmoney')
+                  ->with('activity.activityspendmoney.ActivityDetailSpendmoney')
             ->with('department')
             ->with('Objective')
             ->with('projectUsers.user')
@@ -199,7 +213,8 @@ class ProjectService
 
         $project = Project::where('id_year', $id)
             ->orderBy('project_number')
-            // ->with('strategic')
+            ->with('actionplan')
+            ->with('actionplan.strategic')
             ->paginate($perPage);
 
         return $project;

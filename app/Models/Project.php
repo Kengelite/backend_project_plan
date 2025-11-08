@@ -65,9 +65,17 @@ class Project extends Model
     {
         return $this->hasMany(projectPrinciple::class, 'id_project');
     }
+    public function activity()
+    {
+        return $this->hasMany(Activity::class, 'id_project');
+    }
     public function year()
     {
         return $this->belongsTo(year::class, 'id_year'); // โดยที่ project_id คือ key ที่เชื่อมกัน
+    }
+    public function actionplan()
+    {
+        return $this->belongsTo(ActionPlan::class, 'id_action_plan'); // โดยที่ project_id คือ key ที่เชื่อมกัน
     }
     public function projectIndicator()
     {
