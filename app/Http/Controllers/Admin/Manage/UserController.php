@@ -35,6 +35,90 @@ class UserController extends Controller
         }
     }
 
+    public function getdataforuser(UserService $userService, Request $request)
+    {
+        try {
+            $id_user = $request->id_user;
+            $id_year = $request->id_year;
+            // $perPage = $request->input('per_page', 10);
+            $result = $userService->getDataUserSumProjectActivty($id_user, $id_year);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+    public function getdataforuserproject(UserService $userService, Request $request)
+    {
+        try {
+            $id_user = $request->id_user;
+            $id_year = $request->id_year;
+            $perPage = $request->input('per_page', 10);
+            $result = $userService->getByIDUserProject($id_user,$id_year,$perPage);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function getdataforuseractivity(UserService $userService, Request $request)
+    {
+        try {
+            $id_user = $request->id_user;
+            $id_year = $request->id_year;
+            $perPage = $request->input('per_page', 10);
+            $result = $userService->getByIDUserActivity($id_user,$id_year,$perPage);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    public function getdataforuserokr(UserService $userService, Request $request)
+    {
+        try {
+            $id_user = $request->id_user;
+            $id_year = $request->id_year;
+            $perPage = $request->input('per_page', 10);
+            $result = $userService->getByIDUserOkr($id_user,$id_year,$perPage);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
     public function teacher(UserService $userService)
     {
 

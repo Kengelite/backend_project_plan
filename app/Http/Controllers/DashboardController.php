@@ -48,6 +48,25 @@ class DashboardController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+    public function bardepartment(DashboardService $dashboardService, Request $request)
+    {
+
+        try {
+            $id_year = $request->input('id_year');
+            $result = $dashboardService->getYearPieStrategic($id_year);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
     public function LineStrategicReport(DashboardService $dashboardService, Request $request)
     {
 

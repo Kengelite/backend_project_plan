@@ -231,66 +231,66 @@ class ActivityDetailService
 
 
             // ดึงรายการเดิมทั้งหมดที่ผูกกับ activity_detail_id
-            $existingSpendMoneyIds = ActivityDetailSpendmoney::where('id_activity_detail', $activityDetailDB->activity_detail_id)
-                ->pluck('activity_detail_spendmoney_id')
-                ->toArray();
+            // $existingSpendMoneyIds = ActivityDetailSpendmoney::where('id_activity_detail', $activityDetailDB->activity_detail_id)
+            //     ->pluck('activity_detail_spendmoney_id')
+            //     ->toArray();
 
-            $newIds = []; // เก็บ id ที่ถูกส่งมา
+            // $newIds = []; // เก็บ id ที่ถูกส่งมา
 
-            foreach ($activityDetailDTO->ActivitiyDetailSpendMoneyDTO as $value) {
-                if (!empty($value->id)) {
-                    //  กรณีมี id -> update
-                    $okrDetailProjectDB = ActivityDetailSpendmoney::where('activity_detail_spendmoney_id', $value->id)
-                        ->where('id_activity_detail', $activityDetailDB->activity_detail_id)
-                        ->first();
+            // foreach ($activityDetailDTO->ActivitiyDetailSpendMoneyDTO as $value) {
+            //     if (!empty($value->id)) {
+            //         //  กรณีมี id -> update
+            //         $okrDetailProjectDB = ActivityDetailSpendmoney::where('activity_detail_spendmoney_id', $value->id)
+            //             ->where('id_activity_detail', $activityDetailDB->activity_detail_id)
+            //             ->first();
 
-                    if ($okrDetailProjectDB) {
-                        $okrDetailProjectDB->id_activity_spendmoney = $value->id_activity_spendmoney;
-                        $okrDetailProjectDB->price = $value->price;
-                        $okrDetailProjectDB->amount = $value->amount;
-                        $okrDetailProjectDB->save();
-                        $newIds[] = $okrDetailProjectDB->activity_detail_spendmoney_id;
-                    }
-                } else {
-                    //  ไม่มี id -> insert ใหม่
-                    $okrDetailProjectDB = new ActivityDetailSpendmoney();
-                    $okrDetailProjectDB->id_activity_detail = $activityDetailDB->activity_detail_id;
-                    $okrDetailProjectDB->id_activity_spendmoney = $value->id_activity_spendmoney;
-                    $okrDetailProjectDB->price = $value->price;
-                    $okrDetailProjectDB->amount = $value->amount;
-                    $okrDetailProjectDB->save();
-                    $newIds[] = $okrDetailProjectDB->activity_detail_spendmoney_id;
-                }
-            }
+            //         if ($okrDetailProjectDB) {
+            //             $okrDetailProjectDB->id_activity_spendmoney = $value->id_activity_spendmoney;
+            //             $okrDetailProjectDB->price = $value->price;
+            //             $okrDetailProjectDB->amount = $value->amount;
+            //             $okrDetailProjectDB->save();
+            //             $newIds[] = $okrDetailProjectDB->activity_detail_spendmoney_id;
+            //         }
+            //     } else {
+            //         //  ไม่มี id -> insert ใหม่
+            //         $okrDetailProjectDB = new ActivityDetailSpendmoney();
+            //         $okrDetailProjectDB->id_activity_detail = $activityDetailDB->activity_detail_id;
+            //         $okrDetailProjectDB->id_activity_spendmoney = $value->id_activity_spendmoney;
+            //         $okrDetailProjectDB->price = $value->price;
+            //         $okrDetailProjectDB->amount = $value->amount;
+            //         $okrDetailProjectDB->save();
+            //         $newIds[] = $okrDetailProjectDB->activity_detail_spendmoney_id;
+            //     }
+            // }
 
-            //  ลบ record ที่มีอยู่ แต่ไม่ได้ส่งมา
-            $toDelete = array_diff($existingSpendMoneyIds, $newIds);
-            if (!empty($toDelete)) {
-                ActivityDetailSpendmoney::whereIn('activity_detail_spendmoney_id', $toDelete)->delete();
-            }
-            //  อัปเดต spend_money ของ Activity
-            $activity = Activity::findOrFail($activityDetailDTO->id_activity);
-            $activity->spend_money = floatval($activity->spend_money) + $priceDiff;
-            $activity->save();
-            $result['activity_spend_money'] = $activity->budget  - $activity->spend_money;
+            // //  ลบ record ที่มีอยู่ แต่ไม่ได้ส่งมา
+            // $toDelete = array_diff($existingSpendMoneyIds, $newIds);
+            // if (!empty($toDelete)) {
+            //     ActivityDetailSpendmoney::whereIn('activity_detail_spendmoney_id', $toDelete)->delete();
+            // }
+            // //  อัปเดต spend_money ของ Activity
+            // $activity = Activity::findOrFail($activityDetailDTO->id_activity);
+            // $activity->spend_money = floatval($activity->spend_money) + $priceDiff;
+            // $activity->save();
+            // $result['activity_spend_money'] = $activity->budget  - $activity->spend_money;
 
-            //  อัปเดต Project
-            $project = Project::findOrFail($activity->id_project);
-            $project->spend_money = floatval($project->spend_money) + $priceDiff;
-            $project->save();
-            $result['project_spend_money'] = $project->budget  - $project->spend_money;
+            // //  อัปเดต Project
+            // $project = Project::findOrFail($activity->id_project);
+            // $project->spend_money = floatval($project->spend_money) + $priceDiff;
+            // $project->save();
+            // $result['project_spend_money'] = $project->budget  - $project->spend_money;
 
-            //  อัปเดต ActionPlan
-            $actionplan = ActionPlan::findOrFail($project->id_action_plan);
-            $actionplan->spend_money = floatval($actionplan->spend_money) + $priceDiff;
-            $actionplan->save();
-            $result['actionplan_spend_money'] = $actionplan->budget  - $actionplan->spend_money;
+            // //  อัปเดต ActionPlan
+            // $actionplan = ActionPlan::findOrFail($project->id_action_plan);
+            // $actionplan->spend_money = floatval($actionplan->spend_money) + $priceDiff;
+            // $actionplan->save();
+            // $result['actionplan_spend_money'] = $actionplan->budget  - $actionplan->spend_money;
 
-            //  อัปเดต Strategic
-            $strategic = Strategic::findOrFail($actionplan->id_strategic);
-            $strategic->spend_money = floatval($strategic->spend_money) + $priceDiff;
-            $strategic->save();
-            $result['strategic_spend_money'] = $strategic->budget  -  $strategic->spend_money;
+            // //  อัปเดต Strategic
+            // $strategic = Strategic::findOrFail($actionplan->id_strategic);
+            // $strategic->spend_money = floatval($strategic->spend_money) + $priceDiff;
+            // $strategic->save();
+            // $result['strategic_spend_money'] = $strategic->budget  -  $strategic->spend_money;
 
             return $activityDetailDB;
         });

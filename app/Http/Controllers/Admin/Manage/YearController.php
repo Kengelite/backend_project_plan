@@ -33,6 +33,86 @@ class YearController extends Controller
         }
     }
 
+    public function yearallnew(YearService $yearService, Request $request)
+    {
+        try {
+            $id_year = $request->input('id_year');
+            $result = $yearService->getYearAllNew($id_year);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    public function insertyearallnew(YearService $yearService, Request $request)
+    {
+        try {
+            $id_year = $request->input('id_year');
+            $data = $request->input('data_new_year');
+            $result = $yearService->insertDatanewYear($data, $id_year);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    public function yearallnewokr(YearService $yearService, Request $request)
+    {
+        try {
+            $id_year = $request->input('id_year');
+            $result = $yearService->getYearAllNewokr($id_year);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    public function insertyearallnewokr(YearService $yearService, Request $request)
+    {
+        try {
+            $id_year = $request->input('id_year');
+            $data = $request->input('okr');
+            $result = $yearService->insertDatanewYearOkr($data, $id_year);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
     public function yealUser(YearService $yearService)
     {
         try {
@@ -52,7 +132,8 @@ class YearController extends Controller
     }
 
 
-    public function updatestatus(YearService $yearService,Request $request){
+    public function updatestatus(YearService $yearService, Request $request)
+    {
         try {
             $id = $request->id;
             $result = $yearService->updateStatus($id);
@@ -129,7 +210,4 @@ class YearController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
-
-
 }

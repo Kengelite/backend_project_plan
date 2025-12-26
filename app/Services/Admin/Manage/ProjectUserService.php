@@ -31,6 +31,24 @@ class ProjectUserService
             ->with('project') // โหลดข้อมูล project ที่เชื่อมกับ project_user
             ->paginate(10);
 
+        $projectUsers->getCollection()->transform(function ($project) {
+
+            // ใช้ id_project จาก ProjectUser (ค่าตรงกับ project.project_id)
+            $projectId = $project->id_project;
+
+            // ชื่อตารางลองเช็คอีกที ถ้าตารางจริงคือ activities ให้เปลี่ยนเป็น 'activities'
+            $activitiesQuery = DB::table('Activity')
+                ->where('id_project', $projectId)
+                ->whereNull('deleted_at');
+
+            $project->count_activity = (clone $activitiesQuery)->count();
+
+            $project->count_activity_report = (clone $activitiesQuery)
+                ->where('status_report', 1)
+                ->count();
+
+            return $project;
+        });
         return $projectUsers;
     }
     public function getByIDYear($id, $perPage)
@@ -136,18 +154,18 @@ class ProjectUserService
         $projectDB->save();
         return $projectDB;
     }
-    public function delete($id,$type)
+    public function delete($id, $type)
     {
         $project = ProjectUser::where('id_project_user', $id)->firstOrFail();
         $isMain = $project->main == 1;
         $idProject = $project->id_project;
 
-        $data =  DB::transaction(function () use ($project, $isMain, $idProject,$type) {
+        $data =  DB::transaction(function () use ($project, $isMain, $idProject, $type) {
             $project->delete();
 
             if ($isMain) {
                 $nextMainUser = ProjectUser::where('id_project', $idProject)
-                    ->where('type',$type)
+                    ->where('type', $type)
                     ->orderBy('created_at')
                     ->first();
 

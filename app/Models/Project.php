@@ -48,6 +48,13 @@ class Project extends Model
         return $this->hasMany(ProjectUser::class, 'id_project');
     }
 
+
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'project_user', 'id_project', 'id_user')
+            ->withPivot(['type', 'main', 'status', 'id_year'])
+            ->withTimestamps();
+    }
     public function department()
     {
         return $this->belongsTo(Department::class, 'id_department'); // โดยที่ project_id คือ key ที่เชื่อมกัน
@@ -63,7 +70,7 @@ class Project extends Model
     }
     public function projectPrinciple()
     {
-        return $this->hasMany(projectPrinciple::class, 'id_project');
+        return $this->hasMany(ProjectPrinciple::class, 'id_project');
     }
     public function activity()
     {
@@ -71,7 +78,7 @@ class Project extends Model
     }
     public function year()
     {
-        return $this->belongsTo(year::class, 'id_year'); // โดยที่ project_id คือ key ที่เชื่อมกัน
+        return $this->belongsTo(Year::class, 'id_year'); // โดยที่ project_id คือ key ที่เชื่อมกัน
     }
     public function actionplan()
     {

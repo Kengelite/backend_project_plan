@@ -30,6 +30,21 @@ class OkrUserService
         return $projectDB;
     }
 
+
+    public function getByIDUser($id,$perPage)
+    {
+        $userId = Auth::id();
+
+        $principleUser = OkrUser::where('id_user', $userId)
+            ->where('id_year', $id)
+            ->whereHas('okr', function ($query) {
+                $query->where('status', 1);
+            })
+            ->with('okr')
+            ->paginate($perPage);
+
+        return $principleUser;
+    }
     public function update($id, $id_user)
     {
 
@@ -49,7 +64,7 @@ class OkrUserService
 
             if ($isMain) {
                 $nextMainUser = OkrUser::where('id_okr', $idProject)
-                    ->where('type',$project->type)
+                    ->where('type', $project->type)
                     ->orderBy('created_at')
                     ->first();
 

@@ -15,6 +15,8 @@ use App\Http\Requests\Admin\Manage\ActivitydetailRequest;
 use App\Http\Requests\Admin\Manage\ActivityDetailSpendMoneyRequest;
 use App\Http\Requests\Admin\Manage\ProjectEditRequest;
 use App\Http\Requests\Admin\Manage\ActivityEditRequest;
+use App\Http\Requests\Admin\Manage\ActivitydetailupdateRequest;
+
 use App\Dto\ObstacleDTO;
 use App\Dto\OkrDetailProjectDTO;
 use App\Dto\PrincipleDTO;
@@ -449,6 +451,29 @@ trait Utils
             $dataDTO->id_activity_spendmoney = $value['spendmoney_id'];
             $activityDetailDTO->ActivitiyDetailSpendMoneyDTO[] = $dataDTO;
         }
+        return $activityDetailDTO;
+    }
+
+     public function activityDetailRequestToUpdateActivityDetailDTO(ActivitydetailupdateRequest $request)
+    {
+        $activityDetailDTO = new ActivityDetailDTO();
+
+        $activityDetailDTO->detail = $request->input('detail');
+        $activityDetailDTO->price = $request->input('price');
+        $activityDetailDTO->start_date = $request->input('start_date');
+        $activityDetailDTO->end_date = $request->input('end_date');
+        $activityDetailDTO->station = $request->input('station');
+        $activityDetailDTO->report_data = $request->input('report_data');
+        $activityDetailDTO->id_employee = $request->input('id_employee');
+        $activityDetailDTO->id_activity = $request->input('id_activity');
+        // $principles = $request->input('activitiydetailspendmoney', []);
+        // foreach ($principles as $key => $value) {
+        //     $dataDTO = new ActivitiyDetailSpendMoneyDTO();
+        //     $dataDTO->amount = $value['amount'];
+        //     $dataDTO->price = $value['price'];
+        //     $dataDTO->id_activity_spendmoney = $value['spendmoney_id'];
+        //     $activityDetailDTO->ActivitiyDetailSpendMoneyDTO[] = $dataDTO;
+        // }
         return $activityDetailDTO;
     }
 

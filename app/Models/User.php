@@ -59,10 +59,10 @@ class User extends Authenticatable
 
     public function position()
     {
-        return $this->belongsTo(Position::class, 'id_position');
+        return $this->belongsTo(position::class, 'id_position');
     }
 
-    
+
 
     protected static function boot()
     {

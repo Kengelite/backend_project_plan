@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Unit extends Model
 {
     use SoftDeletes;
-    protected $table = 'unit';
+    protected $table = 'Unit';
     protected $primaryKey = 'unit_id';
     protected $keyType = 'string';
     // public function ActivityUsers()

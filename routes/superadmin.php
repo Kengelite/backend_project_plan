@@ -42,6 +42,12 @@ Route::group(['prefix' => '/v1'], function () {
         Route::post('year', [YearController::class, 'yealUser']);
         Route::post('updatestatusyear', [YearController::class, 'updatestatus']);
         Route::delete('deleteyear', [YearController::class, 'destroy']);
+        Route::post('yearallnew', [YearController::class, 'yearallnew']);
+         Route::post('yearallnewokr', [YearController::class, 'yearallnewokr']);
+        // Route::get('yearallnew', [YearController::class, 'getyearallnew']);
+        Route::post('insertyearallnew', [YearController::class, 'insertyearallnew']);
+      Route::post('insertyearallnewokr', [YearController::class, 'insertyearallnewokr']);
+
 
 
         Route::resource('okrall', OkrController::class);
@@ -50,6 +56,7 @@ Route::group(['prefix' => '/v1'], function () {
         Route::delete('deleteokr', [OkrController::class, 'destroy']);
 
         Route::resource('okruser', UserOkrController::class);
+        Route::post('okruserid', [UserOkrController::class, 'getactivityuseryear']);
 
         Route::resource('styleall', TypeController::class);
         Route::get('style', [TypeController::class, 'styleUser']);
@@ -76,6 +83,12 @@ Route::group(['prefix' => '/v1'], function () {
 
 
         Route::resource('userall', UserController::class);
+        Route::post('usersummarize', [UserController::class, 'getdataforuser']);
+        Route::post('userresponsibleproject', [UserController::class, 'getdataforuserproject']);
+        Route::post('userresponsibleactivity', [UserController::class, 'getdataforuseractivity']);
+        Route::post('userresponsibleokr', [UserController::class, 'getdataforuserokr']);
+
+
         Route::get('userteacher', [UserController::class, 'teacher']);
         Route::get('useremployee', [UserController::class, 'employee']);
         Route::delete('deleteuser', [UserController::class, 'destroy']);
@@ -141,6 +154,7 @@ Route::group(['prefix' => '/v1'], function () {
 
         Route::post('dashboard', [DashboardController::class, 'project']);
         Route::post('dashboardpie', [DashboardController::class, 'pie']);
+        Route::post('dashboardbardepartment', [DashboardController::class, 'pie']);
         Route::post('dashboardlinestrategicreport', [DashboardController::class, 'LineStrategicReport']);
         Route::get('/send-mail/{id}/{type}', [EmailController::class, 'sendEmail']);
 

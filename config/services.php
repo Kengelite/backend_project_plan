@@ -1,5 +1,7 @@
 <?php
 
+
+
 return [
 
     /*
@@ -34,5 +36,9 @@ return [
             'channel' => env('SLACK_BOT_USER_DEFAULT_CHANNEL'),
         ],
     ],
-
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => env('GOOGLE_REDIRECT_URL'), // ในกรณี userFromToken ค่านี้อาจไม่ถูกใช้ แต่ต้องมีไว้กัน error
+    ],
 ];

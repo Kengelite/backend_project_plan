@@ -22,14 +22,14 @@ class YearRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'year' => 'required|string|max:255',
+            'year' => 'required|string|max:4',
         ];
     }
 
     public function messages()
     {
         return [
-            'year.required' => 'กรุณากรอกชื่อประเภท',
+            'year.required' => 'กรุณากรอกชื่อปี',
             'year.string' => 'ชื่อประเภทต้องเป็นข้อความ',
             'year.max' => 'ชื่อประเภทต้องไม่เกิน 255 ตัวอักษร',
         ];

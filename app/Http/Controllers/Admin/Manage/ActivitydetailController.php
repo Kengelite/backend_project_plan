@@ -10,6 +10,8 @@ use App\Services\Admin\Manage\ActivityDetailService;
 use App\Trait\Utils;
 use App\Http\Requests\Admin\Manage\ActivitydetailRequest;
 use App\Models\ActivityDetail;
+use App\Http\Requests\Admin\Manage\ActivitydetailupdateRequest;
+
 use App\Http\Resources\HTTPCreatedResponse;
 
 class ActivitydetailController extends Controller
@@ -33,7 +35,7 @@ class ActivitydetailController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-     public function dataspendprice(ActivityDetailService $actionplanService, Request $request)
+    public function dataspendprice(ActivityDetailService $actionplanService, Request $request)
     {
         try {
             $id_strategic = $request->id;
@@ -169,10 +171,10 @@ class ActivitydetailController extends Controller
         }
     }
 
-    public function update(ActivitydetailRequest $request, ActivityDetailService $activityDetailService, string $id)
+    public function update(ActivitydetailupdateRequest $request, ActivityDetailService $activityDetailService, string $id)
     {
         try {
-            $studentCourseDTO = $this->activityDetailRequestToActivityDetailDTO($request);
+            $studentCourseDTO = $this->activityDetailRequestToUpdateActivityDetailDTO($request);
             $result = $activityDetailService->update($studentCourseDTO, $id);
             // $result = $request->department_name;
             $res = new HTTPCreatedResponse(['data' => $result]);

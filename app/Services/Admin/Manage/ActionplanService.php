@@ -68,7 +68,7 @@ class ActionplanService
 
 
 
-        $actionPlans = DB::table('action_plan')
+        $actionPlans = DB::table('Action_Plan')
             ->where('id_strategic', $id)
             ->whereNull('deleted_at')
             ->orderBy('action_plan_number')
@@ -77,7 +77,7 @@ class ActionplanService
 
         // เพิ่ม field projects_count แบบแยก query
         $actionPlans->getCollection()->transform(function ($plan) {
-            $projectsCount = DB::table('project')
+            $projectsCount = DB::table('Project')
                 ->where('id_action_plan', $plan->action_plan_id)
                 ->whereNull('deleted_at')
                 ->count();
@@ -113,7 +113,7 @@ class ActionplanService
 
         $actionPlan = ActionPlan::where('id_year', $id)
             ->orderBy('action_plan_number')
-            ->with('strategic')
+            ->with('Strategic')
             ->paginate($perPage);
 
         return $actionPlan;

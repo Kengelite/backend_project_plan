@@ -141,9 +141,9 @@ class ActivityService
         ])
             ->whereNull('deleted_at')
             ->where('id_project', $id)
-            ->whereHas('activityspendmoney.ActivityDetailSpendmoney', function ($q) {
-                $q->whereNull('deleted_at');
-            })
+            // ->whereHas('activityspendmoney.ActivityDetailSpendmoney', function ($q) {
+            //     $q->whereNull('deleted_at');
+            // })
             ->orderBy('id')
             ->paginate($perPage)
             ->withQueryString();
@@ -153,7 +153,7 @@ class ActivityService
         // •	getCollection() → ดึงเฉพาะ array ของผลลัพธ์จาก paginator
         // •	transform(...) → ใช้เปลี่ยนค่าทุกแถวใน collection
         $activities->getCollection()->transform(function ($activity) {
-            $activity->activity_detail_count = DB::table('activity_detail')
+            $activity->activity_detail_count = DB::table('Activity_detail')
                 ->where('id_activity', $activity->activity_id)
                 ->whereNull('deleted_at')
                 ->count();
@@ -184,7 +184,7 @@ class ActivityService
 
         $activityUser = ActivityUser::where('id_user', $userId)
             ->where('id_year', $id)
-            ->whereHas('activity', function ($query) {
+            ->whereHas('Activity', function ($query) {
                 $query->where('status', 1);
             })
             ->with('activity')

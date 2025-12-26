@@ -12,5 +12,6 @@ Route::get('/user', function (Request $request) {
 })->middleware('auth:sanctum');
 
 Route::post('login-admin',[UserAuthController::class,'login']);
+Route::post('login-gmail',[UserAuthController::class,'loginwithgmail']);
 Route::post('logout',[UserAuthController::class,'logout'])
   ->middleware('auth:sanctum');

@@ -55,6 +55,12 @@ class Activity extends Model
         'obstacle',
     ];
 
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'activty_user', 'id_activity', 'id_user')
+            ->withPivot(['type', 'main', 'status', 'id_year'])
+            ->withTimestamps();
+    }
     public function ActivityUsers()
     {
         return $this->hasMany(ActivityUser::class, 'id_activity');
@@ -79,13 +85,13 @@ class Activity extends Model
     {
         return $this->hasMany(StyleActivtiyDetail::class, 'id_activity');
     }
-     public function activityspendmoney()
+    public function activityspendmoney()
     {
         return $this->hasMany(ActivitySpendmoney::class, 'id_activity');
     }
     public function year()
     {
-        return $this->belongsTo(year::class, 'id_year'); // โดยที่ project_id คือ key ที่เชื่อมกัน
+        return $this->belongsTo(Year::class, 'id_year'); // โดยที่ project_id คือ key ที่เชื่อมกัน
     }
     public function project()
     {

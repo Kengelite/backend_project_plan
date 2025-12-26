@@ -52,6 +52,7 @@ class ProjectUser extends Model
     {
         return $this->belongsTo(User::class, 'id_user');
     }
+    
     protected $fillable = [
         'id_project_user',
         'type',

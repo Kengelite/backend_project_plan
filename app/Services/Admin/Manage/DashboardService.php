@@ -5,6 +5,7 @@ namespace App\Services\Admin\Manage;
 use App\Models\Project;
 use App\Models\Activity;
 use App\Models\Department;
+use App\Models\Okr;
 use App\Models\Strategic;
 use App\Models\Year;
 use App\Trait\Utils;
@@ -28,9 +29,21 @@ class DashboardService
             ->where('status_report', '1')
             ->count();
 
+        $actual_money = Activity::where('id_year', $id)
+            ->sum('actual_money');
+
+
         $year = Year::where('year_id', $id)->first();
 
         $Strategic = Strategic::where('id_year', $id)->sum('spend_money');
+
+
+        $okr_total = Okr::where('id_year', $id)->count();
+
+        $okr_report = Okr::where('id_year', $id)
+            ->where('status_report', '1')
+            ->count();
+
 
 
         return [
@@ -38,12 +51,26 @@ class DashboardService
             'projects_report' => $projects_report,
             'activity_total' => $activity_total,
             'activity_report' => $activity_report,
+            'okr_total' => $okr_total,
+            'okr_report' => $okr_report,
+            'budget' => $year->budget,
             'spend_money' => $Strategic,
+            'actual_money' => $actual_money,
             'avalible' =>  $year->budget - $Strategic,
         ];
     }
 
     public function getYearPieStrategic($id)
+    {
+
+        $Strategic = Strategic::select('strategic_number', 'strategic_name', 'spend_money')->where('id_year', $id)
+            ->orderBy('strategic_number')->get();
+
+
+        return $Strategic;
+    }
+
+    public function getYearBarDepartment($id)
     {
 
         $Strategic = Strategic::select('strategic_number', 'strategic_name', 'spend_money')->where('id_year', $id)
@@ -68,13 +95,15 @@ class DashboardService
             ->get();
 
 
-        $department = Department::select(['departments_name','departments_id'])
-        ->where('status',1)
-        ->get();
+        $department = Department::select(['departments_name', 'departments_id'])
+            ->where('status', 1)
+            ->get();
 
-        return ['department' => $department,
-        'project_report' => $Project_report,
-         'project_total' => $Project_total];
+        return [
+            'department' => $department,
+            'project_report' => $Project_report,
+            'project_total' => $Project_total
+        ];
     }
     public function getYearQuearDashborad($id, $quarter)
     {

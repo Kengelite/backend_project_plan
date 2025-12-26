@@ -15,8 +15,11 @@ use App\Models\ProjectUser;
 use App\Models\Result;
 use App\Models\StyleActivtiyDetail;
 use App\Models\StyleDetail;
+use App\Models\Activity;
+
 use App\Trait\Utils;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class ProjectService
 {
@@ -58,60 +61,13 @@ class ProjectService
     }
     public function getByIDactionplan($id, $perPage)
     {
-        // $project = Project::where('id_action_plan', $id)
-        //     ->orderBy('project_number')
-        //     ->paginate($perPage)
-        //     ->withQueryString();
-
-        //         $activity = DB::table('project')
-        //             ->leftJoin('activity', 'project.project_id', '=', 'activity.id_project')
-        //             ->select(
-        //                 'project.project_id',
-        //                 'project.project_number',
-        //                 'project.project_name',
-        //                 'project.budget',
-        //                 'project.spend_money',
-        //                 'project.status_performance',
-        //                 'project.id_year',
-        //                 'project.status',
-        //                 'project.status_report',
-        //                 DB::raw('COUNT(DISTINCT activity.activity_id) as count_activity'),
-        //                 DB::raw("
-        //   COUNT(CASE
-        //     WHEN activity.status_report = 1
-        //     THEN 1
-        //     ELSE NULL
-        //   END) AS count_activity_report
-        // ")
-        //             )
-        //             ->whereNull('project.deleted_at')
-        //             ->whereNull('activity.deleted_at')
-        //             ->where('project.id_action_plan', $id)
-        //             ->groupBy(
-        //                 'project.project_id',
-        //                 'project.project_number',
-        //                 'project.project_name',
-        //                 'project.budget',
-        //                 'project.spend_money',
-        //                 'project.status',
-        //                 'project.status_performance',
-        //                 'project.id_year',
-        //                 'project.status_report',
-        //             )
-        //             ->orderBy('project.project_number')
-        //             ->paginate($perPage)
-        //             ->withQueryString();
-
-
         $projects = Project::with('department')
             ->with('activity')
             ->with('activity.activityspendmoney')
-                  ->with('activity.activityspendmoney.ActivityDetailSpendmoney')
-            ->with('department')
+            ->with('activity.activityspendmoney.ActivityDetailSpendmoney')
             ->with('Objective')
             ->with('projectUsers.user')
             ->with('projectUsers.user.position')
-
             ->with('projectStyle')
             ->with('year')
             ->with('projectPrinciple')
@@ -126,25 +82,26 @@ class ProjectService
             ->paginate($perPage)
             ->withQueryString();
 
-
-        // คำว่า clone ใน PHP (รวมถึงใน Laravel/Query Builder) หมายถึง การสร้างสำเนา (copy) ของ object เพื่อให้สามารถใช้งานหรือแก้ไขแยกจากต้นฉบับได้ โดยไม่กระทบกัน
-        // เพิ่ม count_activity และ count_activity_report แบบแยก query
-        // ช้ .getCollection() ดึง Collection ที่อยู่ใน paginator ออกมา เพื่อวนทำงานกับแต่ละแถว
         $projects->getCollection()->transform(function ($project) {
-            // A. เตรียม query ของ activity ที่เกี่ยวข้องกับ project นี้
-            $activitiesQuery = DB::table('activity')
-                ->where('id_project', $project->project_id)
+            $projectId = $project->project_id; // <- ใช้อันนี้ให้ตรง schema
+
+            if (!$projectId) {
+                $project->count_activity = 0;
+                $project->count_activity_report = 0;
+                return $project;
+            }
+
+            $query = Activity::where('id_project', $projectId)
                 ->whereNull('deleted_at');
 
-            // B. นับจำนวนทั้งหมดของ activity ที่ผูกกับ project นี้
-            $project->count_activity = (clone $activitiesQuery)->count();
-            // C. นับเฉพาะ activity ที่ status_report = 1 (รายงานแล้ว)
-            $project->count_activity_report = (clone $activitiesQuery)
+            $project->count_activity = (clone $query)->count();
+            $project->count_activity_report = (clone $query)
                 ->where('status_report', 1)
                 ->count();
 
             return $project;
         });
+
         return $projects;
     }
 
@@ -177,7 +134,7 @@ class ProjectService
         // ช้ .getCollection() ดึง Collection ที่อยู่ใน paginator ออกมา เพื่อวนทำงานกับแต่ละแถว
         $projects->transform(function ($project) {
             // A. เตรียม query ของ activity ที่เกี่ยวข้องกับ project นี้
-            $activitiesQuery = DB::table('activity')
+            $activitiesQuery = DB::table('Activity')
                 ->where('id_project', $project->project_id)
                 ->whereNull('deleted_at');
 
@@ -218,6 +175,41 @@ class ProjectService
             ->paginate($perPage);
 
         return $project;
+    }
+
+    public function getByIDUser($id, $perPage)
+    {
+        $userId = Auth::id();
+
+        $projects = ProjectUser::where('id_user', $userId)
+            ->where('id_year', $id)
+            ->whereHas('project', function ($query) {
+                $query->where('status', 1);
+            })
+            ->with('project')
+            ->paginate($perPage);
+
+        // แก้: ใช้ getCollection() + ใช้ id_project ให้ถูก
+        $projects->getCollection()->transform(function ($project) {
+
+            // ใช้ id_project จาก ProjectUser (ค่าตรงกับ project.project_id)
+            $projectId = $project->id_project;
+
+            // ชื่อตารางลองเช็คอีกที ถ้าตารางจริงคือ activities ให้เปลี่ยนเป็น 'activities'
+            $activitiesQuery = DB::table('Activity')
+                ->where('id_project', $projectId)
+                ->whereNull('deleted_at');
+
+            $project->count_activity = (clone $activitiesQuery)->count();
+
+            $project->count_activity_report = (clone $activitiesQuery)
+                ->where('status_report', 1)
+                ->count();
+
+            return $project;
+        });
+
+        return $projects;
     }
 
 

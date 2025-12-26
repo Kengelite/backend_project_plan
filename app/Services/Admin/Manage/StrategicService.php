@@ -42,16 +42,16 @@ class StrategicService
     {
 
         $strategic =
-            DB::table('strategic')
-            ->leftJoin('year', 'strategic.id_year', 'year.year_id')
+            DB::table('Strategic')
+            ->leftJoin('Year', 'Strategic.id_year', 'Year.year_id')
             ->select(
-                'strategic.strategic_id',
-                'strategic.strategic_name',
-                'strategic.strategic_number'
+                'Strategic.strategic_id',
+                'Strategic.strategic_name',
+                'Strategic.strategic_number'
             )
-            ->where('strategic.id_year', $id)
-            ->where('strategic.status', '1')
-            ->orderBy('strategic.strategic_number')
+            ->where('Strategic.id_year', $id)
+            ->where('Strategic.status', '1')
+            ->orderBy('Strategic.strategic_number')
             ->paginate(10)
             ->withQueryString();
         // Strategic::where('id_year', $id)
@@ -110,7 +110,7 @@ class StrategicService
 
             $strategic->projects_count = Project::whereIn('id_action_plan', function ($query) use ($strategic) {
                 $query->select('action_plan_id')
-                    ->from('action_plan')
+                    ->from('Action_Plan')
                     ->where('id_strategic', $strategic->strategic_id)
                     ->whereNull('deleted_at');
             })

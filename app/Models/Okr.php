@@ -27,8 +27,13 @@ class Okr extends Model
     }
     public function OkrUsers()
     {
-        return $this->hasMany(OkrUser::class, 'id_okr');
+        return $this->hasMany(
+            OkrUser::class,
+            'id_okr',   // FK ใน okr_users
+            'okr_id'    // PK ใน okrs
+        );
     }
+
     protected static function boot()
     {
         parent::boot();

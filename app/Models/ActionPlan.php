@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-
+use Illuminate\Support\Str;
 class ActionPlan extends Model
 {
     use SoftDeletes;
@@ -53,11 +53,21 @@ class ActionPlan extends Model
     ];
     public function strategic()
     {
-        return $this->belongsTo(Strategic::class, 'id_strategic'); // โดยที่ project_id คือ key ที่เชื่อมกัน
+        return $this->belongsTo(Strategic::class, 'strategic_id');
     }
 
     public function projects()
     {
         return $this->hasMany(Project::class, 'id_action_plan');
+    }
+     protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($model) {
+            if (empty($model->{$model->getKeyName()})) {
+                $model->{$model->getKeyName()} = (string) Str::uuid();
+            }
+        });
     }
 }
