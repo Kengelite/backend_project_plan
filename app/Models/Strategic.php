@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+
 class Strategic extends Model
 {
     use SoftDeletes;
@@ -21,6 +22,19 @@ class Strategic extends Model
     {
         return $this->hasMany(ActionPlan::class, 'id_strategic', 'strategic_id');
     }
+
+    public function activities()
+    {
+        return $this->hasManyThrough(
+            Activity::class,
+            ActionPlan::class,
+            'id_strategic',     // FK ใน action_plans
+            'id_project',       // FK ใน activities
+            'strategic_id',     // local key
+            'action_plan_id'    // local key ใน action_plans
+        );
+    }
+
 
     protected static function boot()
     {

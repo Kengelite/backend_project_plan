@@ -59,7 +59,8 @@ class StrategicController extends Controller
     {
         try {
             $year_id = $request->year_id;
-            $result = $strategicService->getByYear($year_id);
+            $perPage = $request->input('per_page', 10);
+            $result = $strategicService->getByYear($year_id,  $perPage);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -79,6 +80,27 @@ class StrategicController extends Controller
         try {
             $year_id = $request->year_id;
             $result = $strategicService->getByYearForAdd($year_id);
+            $res = new HTTPSuccessResponse(['data' => $result]);
+            return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
+        } catch (\App\Exceptions\CustomException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->getErrorDetails()
+            ], $e->getStatusCode());
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => $e->getMessage()
+            ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+
+    public function getstrategicsum(StrategicService $strategicService, Request $request)
+    {
+        try {
+            $year_id = $request->year_id;
+            $result = $strategicService->getSumByYear($year_id);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {

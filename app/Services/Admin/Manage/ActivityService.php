@@ -31,12 +31,20 @@ class ActivityService
 
     public function getdataspendprice($id)
     {
-        $result = Activity::where('id_project', $id)
+        $dataActivity = Activity::where('id_project', $id)
             ->whereNull('deleted_at')
             ->selectRaw('SUM(budget) as total_budget, SUM(spend_money) as total_spend')
             ->first();
 
-        return   $result;
+        $dataProject = Project::select('budget')
+            ->where('project_id', $id)
+            ->first();
+        return [
+            'total_budget' => $dataActivity->total_budget,
+            'total_spend'             => $dataActivity->total_spend,
+            'strategic_budget'        => $dataProject->budget ?? 0,
+            'remaining_budget'        => ($dataProject->budget ?? 0) - $dataActivity->total_budget,
+        ];
     }
     public function getByID($id)
     {

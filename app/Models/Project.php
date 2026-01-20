@@ -94,6 +94,11 @@ class Project extends Model
         return $this->hasMany(OkrDetailProject::class, 'id_project');
     }
 
+    public function activities()
+    {
+        return $this->hasMany(Activity::class, 'id_project');
+    }
+
 
     protected $fillable = [
         'project_id',

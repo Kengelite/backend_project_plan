@@ -4,6 +4,7 @@ namespace App\Services\Admin\Manage;
 
 use App\Dto\ActionPlanDTO;
 use App\Models\ActionPlan;
+use App\Models\Strategic;
 use App\Trait\Utils;
 use Illuminate\Notifications\Action;
 use Illuminate\Support\Facades\DB;
@@ -24,13 +25,25 @@ class ActionplanService
 
     public function getdataspendprice($id)
     {
-        $result = ActionPlan::where('id_strategic', $id)
-            ->whereNull('deleted_at')
-            ->selectRaw('SUM(budget) as total_budget, SUM(spend_money) as total_spend')
+        $actionPlanSum = ActionPlan::where('id_strategic', $id)
+            ->selectRaw('
+            COALESCE(SUM(budget), 0) as total_budget,
+            COALESCE(SUM(spend_money), 0) as total_spend
+        ')
             ->first();
 
-        return   $result;
+        $strategic = Strategic::select('budget')
+            ->where('strategic_id', $id)
+            ->first();
+
+        return [
+            'total_budget' => $actionPlanSum->total_budget,
+            'total_spend'             => $actionPlanSum->total_spend,
+            'strategic_budget'        => $strategic->budget ?? 0,
+            'remaining_budget'        => ($strategic->budget ?? 0) - $actionPlanSum->total_budget,
+        ];
     }
+
 
     public function getByIDstrategic($id, $perPage)
     {

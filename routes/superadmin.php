@@ -27,7 +27,8 @@ use App\Http\Controllers\Admin\Manage\IndicatorActivityController;
 use App\Http\Controllers\Admin\Manage\UserActivityController;
 use App\Http\Controllers\Admin\Manage\UserOkrController;
 use App\Http\Controllers\Admin\Manage\ActivitySpendMoneyController;
-
+use App\Http\Controllers\Admin\Manage\FileDataUploadController;
+use App\Http\Controllers\Admin\Manage\RoundFileUploadController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
@@ -43,10 +44,10 @@ Route::group(['prefix' => '/v1'], function () {
         Route::post('updatestatusyear', [YearController::class, 'updatestatus']);
         Route::delete('deleteyear', [YearController::class, 'destroy']);
         Route::post('yearallnew', [YearController::class, 'yearallnew']);
-         Route::post('yearallnewokr', [YearController::class, 'yearallnewokr']);
+        Route::post('yearallnewokr', [YearController::class, 'yearallnewokr']);
         // Route::get('yearallnew', [YearController::class, 'getyearallnew']);
         Route::post('insertyearallnew', [YearController::class, 'insertyearallnew']);
-      Route::post('insertyearallnewokr', [YearController::class, 'insertyearallnewokr']);
+        Route::post('insertyearallnewokr', [YearController::class, 'insertyearallnewokr']);
 
 
 
@@ -99,6 +100,7 @@ Route::group(['prefix' => '/v1'], function () {
         Route::post('yearstrategic', [StrategicController::class, 'getStrategicByYear']);
         Route::post('strategicforadd', [StrategicController::class, 'getStrategicByYearForAdd']);
         Route::delete('deletestrategic', [StrategicController::class, 'destroy']);
+        Route::post('strategicsum', [StrategicController::class, 'getstrategicsum']);
 
 
         Route::resource('actionplan', ActionplanController::class);
@@ -182,5 +184,15 @@ Route::group(['prefix' => '/v1'], function () {
         Route::get('/activityspendmoney/activity/{id}', [ActivitySpendmoneyController::class, 'getbyidactivity']);
 
         Route::resource('activitydetailspendmoney', ActivityDetailSpendMoneyController::class);
+
+
+
+
+        Route::resource('filedataupload', FileDataUploadController::class);
+
+        Route::post('filedatabyidfile', [FileDataUploadController::class, 'getallfileround']);
+
+        Route::resource('roundfileupload', RoundFileUploadController::class);
+        Route::post('uploaddata', [RoundFileUploadController::class, 'uploaddata']);
     });
 });

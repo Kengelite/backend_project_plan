@@ -52,12 +52,20 @@ class ProjectService
 
     public function getdataspendprice($id)
     {
-        $result = Project::where('id_action_plan', $id)
+        $dataProject = Project::where('id_action_plan', $id)
             ->whereNull('deleted_at')
             ->selectRaw('SUM(budget) as total_budget, SUM(spend_money) as total_spend')
             ->first();
 
-        return   $result;
+        $dataAction = ActionPlan::select('budget')
+            ->where('action_plan_id', $id)
+            ->first();
+        return [
+            'total_budget' => $dataProject->total_budget,
+            'total_spend'             => $dataProject->total_spend,
+            'strategic_budget'        => $dataAction->budget ?? 0,
+            'remaining_budget'        => ($dataAction->budget ?? 0) - $dataProject->total_budget,
+        ];
     }
     public function getByIDactionplan($id, $perPage)
     {

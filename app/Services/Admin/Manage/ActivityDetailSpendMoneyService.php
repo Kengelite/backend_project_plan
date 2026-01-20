@@ -39,12 +39,12 @@ class ActivityDetailSpendMoneyService
             $activity = Activity::findOrFail($activitySpend->id_activity);
             //  NEW: เช็คงบก่อนบันทึก
             $newSpendMoney = (float) $activity->spend_money - $priceToSubtract;
-            if ($newSpendMoney > $activity->budget) {
-                throw ValidationException::withMessages([
-                    'budget' => ["งบประมาณกิจกรรมไม่เพียงพอ "]
-                ]);
-                // หรือ: abort(422, "งบประมาณกิจกรรมไม่เพียงพอ");
-            }
+            // if ($newSpendMoney > $activity->budget) {
+            //     throw ValidationException::withMessages([
+            //         'budget' => ["งบประมาณกิจกรรมไม่เพียงพอ "]
+            //     ]);
+            //     // หรือ: abort(422, "งบประมาณกิจกรรมไม่เพียงพอ");
+            // }
 
             // ผ่าน → อัปเดตต่อ
             $activitySpend->price -= $priceToSubtract;
@@ -182,12 +182,12 @@ class ActivityDetailSpendMoneyService
 
             // 3) เช็คงบประมาณก่อนบันทึก
             $prospectiveSpend = (float) $activity->spend_money + $delta;
-            if ($prospectiveSpend > $activity->budget) {
-                throw ValidationException::withMessages([
-                    'budget' => ["งบประมาณกิจกรรมไม่เพียงพอ "]
-                ]);
-                // หรือ: abort(422, "งบประมาณกิจกรรมไม่เพียงพอ");
-            }
+            // if ($prospectiveSpend > $activity->budget) {
+            //     throw ValidationException::withMessages([
+            //         'budget' => ["งบประมาณกิจกรรมไม่เพียงพอ "]
+            //     ]);
+            //     // หรือ: abort(422, "งบประมาณกิจกรรมไม่เพียงพอ");
+            // }
             // 4) สร้างแถว ActivityDetailSpendmoney
             $detailSpend = new ActivityDetailSpendmoney();
             $detailSpend->id_activity_detail     = $dto->id_activity_detail;

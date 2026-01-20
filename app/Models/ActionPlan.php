@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Str;
+
 class ActionPlan extends Model
 {
     use SoftDeletes;
@@ -53,14 +54,19 @@ class ActionPlan extends Model
     ];
     public function strategic()
     {
-        return $this->belongsTo(Strategic::class, 'strategic_id');
+        return $this->belongsTo(Strategic::class, 'id_strategic', 'strategic_id');
     }
 
+
+    public function project()
+    {
+        return $this->hasMany(Project::class, 'id_action_plan','action_plan_id');
+    }
     public function projects()
     {
-        return $this->hasMany(Project::class, 'id_action_plan');
+        return $this->hasMany(Project::class, 'id_action_plan','action_plan_id');
     }
-     protected static function boot()
+    protected static function boot()
     {
         parent::boot();
 
