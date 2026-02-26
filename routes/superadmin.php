@@ -55,6 +55,7 @@ Route::group(['prefix' => '/v1'], function () {
         Route::post('okr', [OkrController::class, 'OkeUser']);
         Route::post('updatestatusokr', [OkrController::class, 'updatestatusOkr']);
         Route::delete('deleteokr', [OkrController::class, 'destroy']);
+        Route::get('/okr-next-number', [OkrController::class, 'getNextOkrNumber']);
 
         Route::resource('okruser', UserOkrController::class);
         Route::post('okruserid', [UserOkrController::class, 'getactivityuseryear']);

@@ -9,6 +9,7 @@ use App\Http\Resources\HTTPCreatedResponse;
 use App\Services\Admin\Manage\OkrService;
 
 use App\Trait\Utils;
+use App\Models\Okr;
 use App\Http\Requests\Admin\Manage\OkrRequest;
 
 class OkrController extends Controller
@@ -240,5 +241,25 @@ class OkrController extends Controller
                 'message' => $e->getMessage()
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
+    }
+
+    public function getNextOkrNumber()
+    {
+        $last = Okr::orderByRaw("
+            CAST(SUBSTRING(okr_number, 8) AS UNSIGNED) DESC
+        ")->first();
+
+        if (!$last) {
+            return response()->json([
+                'okr_number' => 'CP-OKR-1'
+            ]);
+        }
+
+        $number = (int) str_replace('CP-OKR-', '', $last->okr_number);
+        $next = $number + 1;
+
+        return response()->json([
+            'okr_number' => 'CP-OKR-' . $next
+        ]);
     }
 }
