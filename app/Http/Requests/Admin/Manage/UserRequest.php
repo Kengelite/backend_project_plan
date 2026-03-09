@@ -24,17 +24,17 @@ class UserRequest extends FormRequest
         $rules = [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255'],
-            'url_img' => ['required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
+            // 'url_img' => ['required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'],
             'academic_position' => ['nullable', 'string', 'max:255'],
             'id_position' => ['required'],
         ];
 
         if ($this->isMethod('post')) {
             $rules['password'] = ['required', 'string', 'min:8',];
-            $rules['url_img'] = ['required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'];
+            // $rules['url_img'] = ['required', 'image', 'mimes:jpeg,png,jpg', 'max:2048'];
         } else {
             $rules['password'] = ['nullable', 'string', 'min:8'];
-            $rules['url_img'] = ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'];
+            // $rules['url_img'] = ['nullable', 'image', 'mimes:jpeg,png,jpg', 'max:2048'];
 
         }
 
@@ -50,7 +50,7 @@ class UserRequest extends FormRequest
             'email.email' => 'รูปแบบอีเมลไม่ถูกต้อง',
             // 'password.required' => 'กรุณากรอกรหัสผ่าน',
             // 'password.min' => 'รหัสผ่านต้องมีอย่างน้อย 8 ตัวอักษร',
-            'url_img.image' => 'ไฟล์ต้องเป็นรูปภาพเท่านั้น',
+            // 'url_img.image' => 'ไฟล์ต้องเป็นรูปภาพเท่านั้น',
             // 'url_img.required' => 'กรุณาอัพรูป',
             'id_position.required' => 'กรุณาระบุตำแหน่ง',
         ];

@@ -243,23 +243,18 @@ class OkrController extends Controller
         }
     }
 
-    public function getNextOkrNumber()
+    public function getNextOkrNumber(Request $request)
     {
-        $last = Okr::orderByRaw("
-            CAST(SUBSTRING(okr_number, 8) AS UNSIGNED) DESC
-        ")->first();
+        $yearId = $request->year_id;
 
-        if (!$last) {
-            return response()->json([
-                'okr_number' => 'CP-OKR-1'
-            ]);
-        }
+        $maxNumber = Okr::where('id_year', $yearId)
+            ->selectRaw("MAX(CAST(SUBSTRING(okr_number, 8) AS UNSIGNED)) as max_number")
+            ->value('max_number');
 
-        $number = (int) str_replace('CP-OKR-', '', $last->okr_number);
-        $next = $number + 1;
+        $nextNumber = $maxNumber ? $maxNumber + 1 : 1;
 
         return response()->json([
-            'okr_number' => 'CP-OKR-' . $next
+            'okr_number' => 'CP-OKR-' . $nextNumber
         ]);
     }
 }

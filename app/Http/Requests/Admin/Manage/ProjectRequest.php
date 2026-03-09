@@ -23,9 +23,10 @@ class ProjectRequest extends FormRequest
     {
         return [
             'id_department' => 'required|string',
+            'project_number' => 'required|string',
             'project_name' => 'required|string|max:255',
-            'id_strategic' => 'required|string',
-            'id_actionplan' => 'required|string',
+            // 'id_strategic' => 'required|string|exists:strategic,strategic_id',
+            'id_actionplan' => 'required|string|exists:action_plan,action_plan_id',
             'budget' => 'required|string',
             'location' => 'required|string|max:255',
             'time_start' => 'required|date',

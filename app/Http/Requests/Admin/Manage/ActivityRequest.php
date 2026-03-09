@@ -26,7 +26,7 @@ class ActivityRequest extends FormRequest
             'activity_name' => 'required|string|max:255',
             'id_strategic' => 'required|string',
             'id_actionplan' => 'required|string',
-            'budget' => 'required|string',
+            'budget' => 'required|numeric',
             'location' => 'required|string|max:255',
             'time_start' => 'required|date',
             'time_end' => 'required|date|after_or_equal:time_start',

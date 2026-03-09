@@ -150,10 +150,10 @@ class UserService
 
         $user = new User();
 
-        if ($userDTO->urlImg) {
-            $resultFile = $this->storeFile($userDTO->urlImg, '/uploads/user');
-            $user->url_img        = @$resultFile['file_name'];
-        }
+        // if ($userDTO->urlImg) {
+        //     $resultFile = $this->storeFile($userDTO->urlImg, '/uploads/user');
+        //     $user->url_img        = @$resultFile['file_name'];
+        // }
 
         $user->name = $userDTO->name;
         $user->email = $userDTO->email;
@@ -171,12 +171,12 @@ class UserService
 
         $user =  User::findOrFail($id);
 
-        if ($userDTO->urlImg) {
-            $oldImage              = '/uploads/user/' . $user->url_img;
-            $result                = @$this->deleteFile($oldImage);
-            $resultFile = $this->storeFile($userDTO->urlImg, '/uploads/user');
-            $user->url_img        = @$resultFile['file_name'];
-        }
+        // if ($userDTO->urlImg) {
+        //     $oldImage              = '/uploads/user/' . $user->url_img;
+        //     $result                = @$this->deleteFile($oldImage);
+        //     $resultFile = $this->storeFile($userDTO->urlImg, '/uploads/user');
+        //     $user->url_img        = @$resultFile['file_name'];
+        // }
 
         $user->name = $userDTO->name;
         $user->email = $userDTO->email;
