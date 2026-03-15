@@ -524,7 +524,7 @@ trait Utils
             $userDTO->password = $request->input('password');
         }
         // $userDTO->role = $request->input('role');
-        $userDTO->urlImg = $request->file('url_img');
+        // $userDTO->urlImg = $request->file('url_img');
         $userDTO->academicPosition = $request->input('academic_position');
         $userDTO->idPosition = $request->input('id_position');
         return $userDTO;

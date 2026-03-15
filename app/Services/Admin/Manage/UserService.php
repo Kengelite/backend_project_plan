@@ -161,6 +161,7 @@ class UserService
         $user->role = $userDTO->academicPosition;
         $user->academic_position = $userDTO->academicPosition;
         $user->id_position = $userDTO->idPosition;
+        $user->url_img = 'default.png';
         $user->save();
         return $user;
     }
