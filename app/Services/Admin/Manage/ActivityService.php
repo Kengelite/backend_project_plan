@@ -276,7 +276,6 @@ class ActivityService
             // $activityDB->OKR_id = "";
             // $activityDB->detail_short = "";
             $activityDB->spend_money = 0;
-            $activityDB->id = $projectDTO->id;
             $activityDB->id_project = $projectDTO->idProject;
 
             $activityDB->id_department = $projectDTO->idDepartment;
@@ -334,7 +333,7 @@ class ActivityService
                 // $projectUserDB->status = $value->status ?? "";
                 $projectUserDB->id_user = $value->idUser;
                 $projectUserDB->id_activity = $activityDB->activity_id;
-                $projectUserDB->id_year = $value->idYear ?? 0;
+                $projectUserDB->id_year = $projectDTO->idYear;
                 $projectUserDB->save();
             }
 
@@ -347,7 +346,7 @@ class ActivityService
                 // $projectUserDB->status = $value->status ?? "";
                 $projectUserDB->id_user = $value->idUser;
                 $projectUserDB->id_activity = $activityDB->activity_id;
-                $projectUserDB->id_year = $value->idYear ?? 0;
+                $projectUserDB->id_year = $projectDTO->idYear;
                 $projectUserDB->save();
             }
 
@@ -409,7 +408,6 @@ class ActivityService
 
             // อัปเดตข้อมูลโครงการ
             $projectDB->name_activity = $projectDTO->nameActivity;
-            $projectDB->id = $projectDTO->id;
             $projectDB->abstract = $projectDTO->abstract;
             $projectDB->time_start = $projectDTO->timeStart;
             $projectDB->time_end = $projectDTO->timeEnd;

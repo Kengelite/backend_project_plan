@@ -240,9 +240,6 @@ class UserService
 
         $userUser = ActivityUser::where('id_user', $userId)
             ->where('id_year', $id)
-            ->whereHas('activity', function ($query) {
-                $query->where('status', 1);
-            })
             ->with('activity')
             ->paginate(10);
 
@@ -264,12 +261,19 @@ class UserService
         // $strategic = Strategic::findOrFail($id)->delete();
         // return $strategic;
 
-        $user = User::where('id', $id)->firstOrFail();
+        $user = User::find($id);
 
-        if ($user->url_img) {
-            $oldImage              = '/uploads/user/' . $user->url_img;
-            $result                = @$this->deleteFile($oldImage);
+        if (!$user) {
+            throw new \App\Exceptions\CustomException(
+                'User not found',
+                404
+            );
         }
+
+        // if ($user->url_img) {
+        //     $oldImage              = '/uploads/user/' . $user->url_img;
+        //     $result                = @$this->deleteFile($oldImage);
+        // }
 
         $user->delete();
         return $user;
