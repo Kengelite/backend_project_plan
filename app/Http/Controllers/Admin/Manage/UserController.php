@@ -61,7 +61,7 @@ class UserController extends Controller
             $id_user = $request->id_user;
             $id_year = $request->id_year;
             $perPage = $request->input('per_page', 10);
-            $result = $userService->getByIDUserProject($id_user,$id_year,$perPage);
+            $result = $userService->getByIDUserProject($id_user, $id_year, $perPage);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -82,7 +82,7 @@ class UserController extends Controller
             $id_user = $request->id_user;
             $id_year = $request->id_year;
             $perPage = $request->input('per_page', 10);
-            $result = $userService->getByIDUserActivity($id_user,$id_year,$perPage);
+            $result = $userService->getByIDUserActivity($id_user, $id_year, $perPage);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -103,7 +103,7 @@ class UserController extends Controller
             $id_user = $request->id_user;
             $id_year = $request->id_year;
             $perPage = $request->input('per_page', 10);
-            $result = $userService->getByIDUserOkr($id_user,$id_year,$perPage);
+            $result = $userService->getByIDUserOkr($id_user, $id_year, $perPage);
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -231,15 +231,22 @@ class UserController extends Controller
     public function store(UserRequest $request, UserService $userService)
     {
         try {
-            $secretKey = $request->header('X-Secret-Key');
+            //  1. เปลี่ยนมารับจาก input() แทน header() เพราะ Next.js ส่งมาแบบ FormData
+            $secretKey = $request->input('secret_key');
+
             if ($secretKey !== env('SECRET_KEY_SUPERADMIN')) {
                 return response()->json([
                     'message' => 'Unauthorized: Invalid secret key',
                 ], \Illuminate\Http\Response::HTTP_FORBIDDEN);
             }
-            $courseDTO = $this->userRequestToUserDTO($request);
-            $result    = $userService->store($courseDTO);
-            $res       = new HTTPCreatedResponse(['data' => $result]);
+
+            //  2. เอา echo $secretKey; ออกไปเลยครับ ไม่งั้น JSON Response จะพัง
+
+            // (แนะนำ: เปลี่ยนชื่อตัวแปรจาก $courseDTO เป็น $userDTO เพื่อป้องกันความสับสนในอนาคต)
+            $userDTO = $this->userRequestToUserDTO($request);
+            $result  = $userService->store($userDTO);
+
+            $res     = new HTTPCreatedResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_CREATED);
         } catch (\App\Exceptions\CustomException $e) {
             return response()->json([
@@ -252,7 +259,6 @@ class UserController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
     /**
      * Display the specified resource.
      */

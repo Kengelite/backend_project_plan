@@ -89,66 +89,59 @@ class YearService
         ];
     }
 
-    public function insertDatanewYear($data, $newYear)
+    public function insertDatanewYear($sourceYearId, $targetYearId)
     {
+        return DB::transaction(function () use ($sourceYearId, $targetYearId) {
 
-        DB::transaction(function () use ($data, $newYear) {
-
-            $strategicMap  = [];
-            $actionPlanMap = [];
-            $projectMap    = [];
-
-            $year = Year::findOrFail($newYear);
+            // 1. ดึงข้อมูลปีเป้าหมายมาเตรียมไว้
+            $year = Year::findOrFail($targetYearId);
             $yearValue = (int) $year->year;
             $timeStart = Carbon::create($yearValue, 10, 1)->startOfDay();
             $timeEnd   = Carbon::create($yearValue + 1, 9, 30)->endOfDay();
 
-            /** =========================
-             * Strategic
-             * ========================= */
             $index_s = 1;
             $index_ap = 1;
             $index_p = 1;
             $index_a = 1;
-            foreach ($data['strategic'] as $sData) {
 
-                $s = Strategic::findOrFail($sData['strategic_id']);
+            /** =========================
+             * 1. ดึง Strategic ของปีเก่า
+             * ========================= */
+            $oldStrategics = Strategic::where('id_year', $sourceYearId)->get();
+
+            foreach ($oldStrategics as $s) {
 
                 $newS = $s->replicate();
-                $newS->id_year = $newYear;
+                $newS->id_year = $targetYearId; // เปลี่ยนเป็นปีใหม่
                 $newS->strategic_number = "CPa" . $index_s++;
                 $newS->fk_strategic =  $s->strategic_id;
                 $newS->spend_money = 0;
                 $newS->save();
 
-                $strategicMap[$s->strategic_id] = $newS->strategic_id;
-
                 /** =========================
-                 * ActionPlan
+                 * 2. ดึง ActionPlan ที่ผูกกับ Strategic เก่า
                  * ========================= */
-                foreach ($sData['actionplans'] as $apData) {
+                $oldActionPlans = ActionPlan::where('id_strategic', $s->strategic_id)->get();
 
-                    $ap = ActionPlan::findOrFail($apData['action_plan_id']);
+                foreach ($oldActionPlans as $ap) {
 
                     $newAp = $ap->replicate();
-                    $newAp->id_strategic = $newS->strategic_id;
-                    $newAp->id_year = $newYear;
+                    $newAp->id_strategic = $newS->strategic_id; // ผูกกับ Strategic ใหม่
+                    $newAp->id_year = $targetYearId;
                     $newAp->action_plan_number = $index_ap++;
                     $newAp->spend_money = 0;
                     $newAp->save();
 
-                    $actionPlanMap[$ap->action_plan_id] = $newAp->action_plan_id;
-
                     /** =========================
-                     * Project
+                     * 3. ดึง Project ที่ผูกกับ ActionPlan เก่า
                      * ========================= */
-                    foreach ($apData['projects'] as $pData) {
+                    $oldProjects = Project::where('id_action_plan', $ap->action_plan_id)->get();
 
-                        $p = Project::findOrFail($pData['project_id']);
+                    foreach ($oldProjects as $p) {
 
                         $newP = $p->replicate();
-                        $newP->id_action_plan = $newAp->action_plan_id;
-                        $newP->id_year        = $newYear;
+                        $newP->id_action_plan = $newAp->action_plan_id; // ผูกกับ ActionPlan ใหม่
+                        $newP->id_year        = $targetYearId;
                         $newP->project_number = $index_p++;
                         $newP->status_report  = 0;
                         $newP->spend_money    = 0;
@@ -156,20 +149,18 @@ class YearService
                         $newP->time_end       = $timeEnd;
                         $newP->save();
 
-                        $projectMap[$p->project_id] = $newP->project_id;
-
+                        // Copy ความสัมพันธ์ของ Project
                         foreach ($p->users as $user) {
                             $newP->users()->attach($user->id, [
                                 'type'    => $user->pivot->type,
                                 'main'    => $user->pivot->main,
                                 'status'  => $user->pivot->status,
-                                'id_year' => $newYear,
+                                'id_year' => $targetYearId,
                             ]);
                         }
-
                         foreach ($p->projectPrinciple as $pp) {
                             $newPP = $pp->replicate();
-                            $newPP->id_project = $newP->project_id; // ผูก project ใหม่
+                            $newPP->id_project = $newP->project_id;
                             $newPP->save();
                         }
                         foreach ($p->Objective as $obj) {
@@ -182,13 +173,11 @@ class YearService
                             $newStyle->id_project = $newP->project_id;
                             $newStyle->save();
                         }
-
                         foreach ($p->projectIndicator as $indicator) {
                             $newIndicator = $indicator->replicate();
                             $newIndicator->id_project = $newP->project_id;
                             $newIndicator->save();
                         }
-
                         foreach ($p->projectOkr as $okr) {
                             $newOkr = $okr->replicate();
                             $newOkr->id_project = $newP->project_id;
@@ -196,16 +185,16 @@ class YearService
                         }
 
                         /** =========================
-                         * Activity
+                         * 4. ดึง Activity ที่ผูกกับ Project เก่า
                          * ========================= */
-                        foreach ($pData['activities'] as $activityId) {
+                        $oldActivities = Activity::where('id_project', $p->project_id)->get();
 
-                            $a = Activity::findOrFail($activityId);
+                        foreach ($oldActivities as $a) {
 
                             $newA = $a->replicate();
-                            $newA->id_project       = $newP->project_id;
-                            $newA->id_year          = $newYear;
-                            $newA->id = $index_a++;
+                            $newA->id_project       = $newP->project_id; // ผูกกับ Project ใหม่
+                            $newA->id_year          = $targetYearId;
+                            $newA->id               = $index_a++;
                             $newA->status_report    = 0;
                             $newA->spend_money      = 0;
                             $newA->actual_money     = 0;
@@ -214,38 +203,25 @@ class YearService
                             $newA->time_end         = $timeEnd;
                             $newA->save();
 
-
-                            // foreach ($p->users as $user) {
-                            //     $newP->users()->attach($user->id, [
-                            //         'type'    => $user->pivot->type,
-                            //         'main'    => $user->pivot->main,
-                            //         'status'  => $user->pivot->status,
-                            //         'id_year' => $newYear,
-                            //     ]);
-                            // }
-
+                            // Copy ความสัมพันธ์ของ Activity
                             foreach ($a->ActivityUsers as $style) {
                                 $newAu = $style->replicate();
                                 $newAu->id_activity = $newA->activity_id;
                                 $newAu->save();
                             }
-
-
                             foreach ($a->activityStyle as $style) {
                                 $newStyle = $style->replicate();
                                 $newStyle->id_activity = $newA->activity_id;
                                 $newStyle->save();
                             }
-
                             foreach ($a->activityIndicator as $indicator) {
                                 $newIndicator = $indicator->replicate();
                                 $newIndicator->id_activity = $newA->activity_id;
                                 $newIndicator->save();
                             }
-
                             foreach ($a->activityPrinciple as $pp) {
                                 $newPP = $pp->replicate();
-                                $newPP->id_activity = $newA->activity_id; // ผูก project ใหม่
+                                $newPP->id_activity = $newA->activity_id;
                                 $newPP->save();
                             }
                             foreach ($a->ObjectiveActivity as $obj) {
@@ -253,7 +229,6 @@ class YearService
                                 $newObj->id_activity = $newA->activity_id;
                                 $newObj->save();
                             }
-
                             foreach ($a->activityOkr as $okr) {
                                 $newOkr = $okr->replicate();
                                 $newOkr->id_activity = $newA->activity_id;
@@ -264,10 +239,18 @@ class YearService
                                 $newOkr->id_activity = $newA->activity_id;
                                 $newOkr->save();
                             }
-                        }
-                    }
-                }
-            }
+                        } // End Activity Loop
+                    } // End Project Loop
+                } // End ActionPlan Loop
+            } // End Strategic Loop
+
+            /** =========================
+             * อัปเดตสถานะ status_add_data ของปีนี้
+             * ========================= */
+            $year->status_add_data = 1;
+            $year->save();
+
+            return true;
         });
     }
 

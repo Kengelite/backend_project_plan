@@ -53,12 +53,16 @@ class YearController extends Controller
     }
 
 
-    public function insertyearallnew(YearService $yearService, Request $request)
+public function insertyearallnew(YearService $yearService, Request $request)
     {
         try {
-            $id_year = $request->input('id_year');
-            $data = $request->input('data_new_year');
-            $result = $yearService->insertDatanewYear($data, $id_year);
+            // รับค่า ID ปีต้นฉบับ และ ปีเป้าหมาย
+            $source_year_id = $request->input('source_year_id');
+            $target_year_id = $request->input('target_year_id');
+
+            // โยน ID ทั้งสองเข้า Service
+            $result = $yearService->insertDatanewYear($source_year_id, $target_year_id);
+
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {
@@ -72,7 +76,6 @@ class YearController extends Controller
             ], \Illuminate\Http\Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
 
     public function yearallnewokr(YearService $yearService, Request $request)
     {
