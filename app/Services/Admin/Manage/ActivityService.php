@@ -19,6 +19,7 @@ use App\Models\StyleActivtiyDetail;
 use Illuminate\Notifications\Action;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class ActivityService
 {
@@ -246,14 +247,11 @@ class ActivityService
         return $activity;
     }
 
-
     public function store(ActivityDTO $projectDTO)
     {
         $activityDB = new Activity();
 
         DB::transaction(function () use ($projectDTO, $activityDB) {
-            // Action plan
-
             $project = Project::where('project_id', $projectDTO->idProject)
                 ->lockForUpdate()
                 ->firstOrFail();
@@ -274,31 +272,31 @@ class ActivityService
 
             $actionPlanDTO = $projectDTO->actionPlanDTO;
             $actionPlanDB = ActionPlan::findOrFail($actionPlanDTO->actionPlanID);
-            // $actionPlanDB->save();
 
-            // Project
+            // generate running id per project
+            $nextRunningId = (int) Activity::where('id_project', $projectDTO->idProject)->max('id');
+            $nextRunningId = $nextRunningId + 1;
+
+            // generate uuid for activity_id
+            $activityDB->activity_id = (string) Str::uuid();
+
+            // important: id in your table is required
+            $activityDB->id = $nextRunningId;
+
             $activityDB->name_activity = $projectDTO->nameActivity;
-            // $activityDB->agency = $projectDTO->agency;
             $activityDB->abstract = $projectDTO->abstract;
             $activityDB->time_start = $projectDTO->timeStart;
             $activityDB->time_end = $projectDTO->timeEnd;
             $activityDB->location = $projectDTO->location;
-            // $activityDB->id_action_plan = $actionPlanDTO->actionPlanID;
             $activityDB->budget = $projectDTO->budget;
-            // $activityDB->OKR_id = "";
-            // $activityDB->detail_short = "";
             $activityDB->spend_money = 0;
             $activityDB->id_project = $projectDTO->idProject;
-
             $activityDB->id_department = $projectDTO->idDepartment;
             $activityDB->result = $projectDTO->result;
             $activityDB->id_year = $projectDTO->idYear;
-            $activityDB->id_project = $projectDTO->idProject;
             $activityDB->obstacle = $projectDTO->obstacle;
             $activityDB->save();
 
-
-            // Okr detail project
             $okrDetailProjectsDTO = $projectDTO->okrDetailProjectsDTO;
             foreach ($okrDetailProjectsDTO as $key => $value) {
                 $okrDetailProjectDB = new OkrDetailActivity();
@@ -307,105 +305,73 @@ class ActivityService
                 $okrDetailProjectDB->save();
             }
 
-            // Principle
             $principlesDTO = $projectDTO->principlesDTO;
             foreach ($principlesDTO as $key => $value) {
                 $principleDB = new ActivityPrinciple();
-                // $principleDB->id_project = $activityDB->project_id;
                 $principleDB->id_principle = $value->idPriciples;
-                $principleDB->id_activity =  $activityDB->activity_id;
-                // $principleDB->status = 0;
+                $principleDB->id_activity = $activityDB->activity_id;
                 $principleDB->save();
             }
 
-            // Style Activtiy Detail
             $styleActivtiyDetailsDTO = $projectDTO->styleActivtiyDetailsDTO;
             foreach ($styleActivtiyDetailsDTO as $key => $value) {
                 $styleActivtiyDetailDB = new StyleActivtiyDetail();
                 $styleActivtiyDetailDB->id_style = $value->idStyle;
-                $styleActivtiyDetailDB->id_activity = $activityDB->activity_id; //TODO ไม่มี id activity
+                $styleActivtiyDetailDB->id_activity = $activityDB->activity_id;
                 $styleActivtiyDetailDB->save();
             }
 
-            // Objective
             $objectivesDTO = $projectDTO->ObjectivesDTO;
             foreach ($objectivesDTO as $key => $value) {
                 $objectiveDB = new ObjectiveActivity();
                 $objectiveDB->objective_activity_name = $value->objectiveName;
-                $objectiveDB->id_activity =  $activityDB->activity_id;
+                $objectiveDB->id_activity = $activityDB->activity_id;
                 $objectiveDB->save();
             }
 
-            // Employee
             $employeesDTO = $projectDTO->employeesDTO;
             foreach ($employeesDTO as $key => $value) {
                 $projectUserDB = new ActivityUser();
                 $projectUserDB->type = $value->type;
                 $projectUserDB->main = $value->main;
-                // $projectUserDB->status = $value->status ?? "";
                 $projectUserDB->id_user = $value->idUser;
                 $projectUserDB->id_activity = $activityDB->activity_id;
                 $projectUserDB->id_year = $projectDTO->idYear;
                 $projectUserDB->save();
             }
 
-            // Teacher
             $teachersDTO = $projectDTO->teachersDTO;
             foreach ($teachersDTO as $key => $value) {
                 $projectUserDB = new ActivityUser();
                 $projectUserDB->type = $value->type;
                 $projectUserDB->main = $value->main;
-                // $projectUserDB->status = $value->status ?? "";
                 $projectUserDB->id_user = $value->idUser;
                 $projectUserDB->id_activity = $activityDB->activity_id;
                 $projectUserDB->id_year = $projectDTO->idYear;
                 $projectUserDB->save();
             }
 
-            // Indicator
             $indicatorsDTO = $projectDTO->indicatorsDTO;
             foreach ($indicatorsDTO as $key => $value) {
                 $indicatorDB = new IndicatorActivity();
-                $indicatorDB->indicator_name =  $value->indicatorName;
-                $indicatorDB->goal =  $value->goal;
+                $indicatorDB->indicator_name = $value->indicatorName;
+                $indicatorDB->goal = $value->goal;
                 $indicatorDB->id_activity = $activityDB->activity_id;
-                $indicatorDB->id_unit =  $value->idUnit;
+                $indicatorDB->id_unit = $value->idUnit;
                 $indicatorDB->save();
             }
 
-
-            // ActivitiySpendMoney
             $ActiivitySpendDTO = $projectDTO->ActivitiySpendMoneyDTO;
             foreach ($ActiivitySpendDTO as $key => $value) {
                 $indicatorDB = new ActivitySpendmoney();
-                $indicatorDB->activity_spendmoney_name =  $value->name;
-                $indicatorDB->id_unit =  $value->idUnit;
+                $indicatorDB->activity_spendmoney_name = $value->name;
+                $indicatorDB->id_unit = $value->idUnit;
                 $indicatorDB->id_activity = $activityDB->activity_id;
                 $indicatorDB->save();
             }
-
-
-            // Result
-            // $resultsDTO = $projectDTO->resultsDTO;
-            // foreach ($resultsDTO as $key => $value) {
-            //     $resultDB = new Result();
-            //     $resultDB->name_result = $value->nameResult;
-            //     $resultDB->id_project = $activityDB->project_id;
-            //     $resultDB->status = 0;
-            //     $resultDB->save();
-            // }
-
-            // Obstacle
-            // $obstaclesDTO = $projectDTO->obstaclesDTO;
-            // foreach ($obstaclesDTO as $key => $value) {
-            //     $obstacleDB = new Obstacle();
-            //     $obstacleDB->name_obstacle = $value->nameObstacle;
-            //     $obstacleDB->status = 0;
-            //     $obstacleDB->save();
-            // }
         });
 
-        return  $activityDB;
+        return $activityDB;
     }
 
     public function update(ActivityDTO $projectDTO, $id)
