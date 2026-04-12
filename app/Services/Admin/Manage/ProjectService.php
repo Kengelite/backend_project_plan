@@ -182,6 +182,12 @@ class ProjectService
             ->with('actionplan.strategic')
             ->paginate($perPage);
 
+        $project->getCollection()->transform(function ($project) {
+            $project->action_plan_number = optional($project->actionplan)->action_plan_number;
+            $project->strategic_number = optional(optional($project->actionplan)->strategic)->strategic_number;
+            return $project;
+        });
+
         return $project;
     }
 

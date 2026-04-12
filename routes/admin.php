@@ -9,6 +9,7 @@ use App\Http\Controllers\Admin\Manage\ProjectUserController;
 use App\Http\Controllers\Admin\Manage\YearController;
 use App\Http\Controllers\Admin\Manage\UserController;
 use App\Http\Controllers\Admin\Manage\OkrController;
+use App\Http\Controllers\Admin\Manage\UserOkrController;
 use App\Http\Controllers\Admin\Manage\PrincipleController;
 use App\Http\Controllers\Admin\Manage\TypeController;
 use App\Http\Controllers\Admin\Manage\DepartmentController;
@@ -32,6 +33,9 @@ Route::group(['prefix' => '/v1'], function () {
         Route::post('okr', [OkrController::class, 'OkeUser']);
         Route::post('updatestatusokr', [OkrController::class, 'updatestatusOkr']);
         Route::delete('deleteokr', [OkrController::class, 'destroy']);
+
+        Route::resource('okruser', UserOkrController::class);
+        Route::post('okruserid', [UserOkrController::class, 'getactivityuseryear']);
 
         Route::resource('styleall', TypeController::class);
         Route::get('style', [TypeController::class, 'styleUser']);

@@ -82,7 +82,7 @@ class Project extends Model
     }
     public function actionplan()
     {
-        return $this->belongsTo(ActionPlan::class, 'id_action_plan'); // โดยที่ project_id คือ key ที่เชื่อมกัน
+        return $this->belongsTo(ActionPlan::class, 'id_action_plan', 'action_plan_id'); // โดยที่ project_id คือ key ที่เชื่อมกัน
     }
     public function projectIndicator()
     {

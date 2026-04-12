@@ -166,6 +166,10 @@ class ActivityService
                 ->whereNull('deleted_at')
                 ->count();
 
+            $activity->project_number = optional($activity->project)->project_number;
+            $activity->action_plan_number = optional(optional($activity->project)->actionplan)->action_plan_number;
+            $activity->strategic_number = optional(optional(optional($activity->project)->actionplan)->strategic)->strategic_number;
+
             return $activity;
         });
         return $activities;
@@ -210,6 +214,14 @@ class ActivityService
             ->with('project.actionplan.strategic')
             ->orderBy('activity_id')
             ->paginate($perPage);
+
+        $project->getCollection()->transform(function ($activity) {
+            $activity->project_number = optional($activity->project)->project_number;
+            $activity->action_plan_number = optional(optional($activity->project)->actionplan)->action_plan_number;
+            $activity->strategic_number = optional(optional(optional($activity->project)->actionplan)->strategic)->strategic_number;
+
+            return $activity;
+        });
 
         return $project;
     }

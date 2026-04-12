@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\Manage\ActivityController;
 use App\Http\Controllers\Admin\Manage\ProjectController;
 use App\Http\Controllers\Admin\Manage\ProjectUserController;
 use App\Http\Controllers\Admin\Manage\ActivitydetailController;
+use App\Http\Controllers\Admin\Manage\UserOkrController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\Manage\YearController;
@@ -21,5 +22,8 @@ Route::group(['prefix' => '/v1'], function () {
         Route::post('year', [YearController::class, 'yealUser']);
         Route::post('activityuserallbyidyear', [ActivityController::class, 'getActivityUserYear']);
         Route::resource('activitydetail', ActivitydetailController::class);
+
+        Route::resource('okruser', UserOkrController::class);
+        Route::post('okruserid', [UserOkrController::class, 'getactivityuseryear']);
     });
 });

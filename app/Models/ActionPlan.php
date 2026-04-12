@@ -57,7 +57,6 @@ class ActionPlan extends Model
         return $this->belongsTo(Strategic::class, 'id_strategic', 'strategic_id');
     }
 
-
     public function project()
     {
         return $this->hasMany(Project::class, 'id_action_plan','action_plan_id');
