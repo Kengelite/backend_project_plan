@@ -193,6 +193,9 @@ class ProjectController extends Controller
     {
         try {
             $result = $activityService->getByID($id);
+            if ($result instanceof \Illuminate\Http\JsonResponse) {
+                return $result; // กรณีไม่เจอข้อมูล
+            }
             $res = new HTTPSuccessResponse(['data' => $result]);
             return response()->json($res, \Illuminate\Http\Response::HTTP_OK);
         } catch (\App\Exceptions\CustomException $e) {

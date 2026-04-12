@@ -45,7 +45,18 @@ class ProjectService
     }
     public function getByID($id)
     {
-        $project = Project::findOrFail($id);
+        // ✅ เปลี่ยนจาก findOrFail() 
+        // เป็นค้นหาด้วย project_number แทน
+        $project = Project::where('project_number', $id)
+                        ->first();
+
+        // ✅ ตรวจสอบว่าเจอข้อมูลหรือไม่
+        if (!$project) {
+            return response()->json([
+                'message' => 'ไม่พบข้อมูลโครงการ'
+            ], 404);
+        }
+
         return $project;
     }
 
