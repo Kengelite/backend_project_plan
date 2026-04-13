@@ -326,7 +326,7 @@ class ProjectService
                 $projectUserDB->status = $value->status;
                 $projectUserDB->id_user = $value->idUser;
                 $projectUserDB->id_project = $projectDB->project_id;
-                $projectUserDB->id_year = $value->idYear ?? 0;
+                $projectUserDB->id_year = $projectDB->id_year;
                 $projectUserDB->save();
             }
 
@@ -339,7 +339,7 @@ class ProjectService
                 $projectUserDB->status = $value->status;
                 $projectUserDB->id_user = $value->idUser;
                 $projectUserDB->id_project = $projectDB->project_id;
-                $projectUserDB->id_year = $value->idYear ?? 0;
+                $projectUserDB->id_year = $projectDB->id_year;
                 $projectUserDB->save();
             }
 
