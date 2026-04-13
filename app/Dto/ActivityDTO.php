@@ -6,7 +6,7 @@ class ActivityDTO extends ProjectDTO
 {
     public string $activityID;
     public string $nameActivity;
-    public string $id;
+    public ?string $id = null;
     public string $idStrategic;
     public string $idProject;
 
