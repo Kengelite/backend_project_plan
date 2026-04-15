@@ -44,65 +44,37 @@ class ActionplanService
         ];
     }
 
-
     public function getByIDstrategic($id, $perPage)
     {
-
-        // $actionPlan = DB::table('action_plan')
-        // ->leftJoin('project', 'action_plan.action_plan_id', '=', 'project.id_action_plan')
-        // ->select(
-        //     'action_plan_id',
-        //     'action_plan_number',
-        //     'name_ap',
-        //     'action_plan.budget',
-        //     'action_plan.spend_money',
-        //     'action_plan.status',
-        //     'id_strategic',
-        //     'action_plan.id_year',
-        //     DB::raw('COUNT(DISTINCT project.project_id) as projects_count')
-        // )
-        // ->where('id_strategic', $id)
-        // ->whereNull('action_plan.deleted_at')
-        // ->whereNull('project.deleted_at')
-        // ->groupBy(
-        //     'action_plan_id',
-        //     'action_plan_number',
-        //     'name_ap',
-        //     'action_plan.budget',
-        //     'action_plan.spend_money',
-        //     'action_plan.status',
-        //     'id_strategic',
-        //     'action_plan.id_year',
-        // )
-        // ->orderBy('action_plan_number')
-        // ->paginate($perPage)
-        // ->withQueryString();
-
-
-
-
-        $actionPlans = DB::table('Action_Plan')
+        $query = DB::table('action_plan')
             ->where('id_strategic', $id)
-            ->whereNull('deleted_at')
-            ->orderBy('action_plan_number')
+            ->whereNull('deleted_at');
+
+        // ถ้าไม่ใช่ superadmin ให้เห็นเฉพาะที่เปิด
+        if (auth()->user()->role != 2) {
+            $query->where('status', 1);
+        }
+
+        $actionPlans = $query->orderBy('action_plan_number')
             ->paginate($perPage)
             ->withQueryString();
 
         // เพิ่ม field projects_count แบบแยก query
         $actionPlans->getCollection()->transform(function ($plan) {
-            $projectsCount = DB::table('Project')
+            $projectsQuery = DB::table('project')
                 ->where('id_action_plan', $plan->action_plan_id)
-                ->whereNull('deleted_at')
-                ->count();
+                ->whereNull('deleted_at');
 
-            $plan->projects_count = $projectsCount;
+            // ถ้าไม่ใช่ superadmin ให้นับเฉพาะ project ที่เปิด
+            if (auth()->user()->role != 2) {
+                $projectsQuery->where('status', 1);
+            }
+
+            $plan->projects_count = $projectsQuery->count();
+
             return $plan;
         });
 
-
-        // $actionPlan = ActionPlan::where('id_strategic', $id)
-        //     ->orderBy('action_plan_number')
-        //     ->paginate($perPage)->withQueryString();
         return $actionPlans;
     }
 
@@ -123,11 +95,18 @@ class ActionplanService
 
     public function getByIDYear($id, $perPage)
     {
-
-        $actionPlan = ActionPlan::where('id_year', $id)
-            ->orderBy('action_plan_number')
+        $query = ActionPlan::where('id_year', $id)
             ->with('Strategic')
-            ->paginate($perPage);
+            ->whereNull('deleted_at');
+
+        // ถ้าไม่ใช่ superadmin ให้เห็นเฉพาะ action plan ที่เปิด
+        if (auth()->user()->role != 2) {
+            $query->where('status', 1);
+        }
+
+        $actionPlan = $query->orderBy('action_plan_number')
+            ->paginate($perPage)
+            ->withQueryString();
 
         return $actionPlan;
     }

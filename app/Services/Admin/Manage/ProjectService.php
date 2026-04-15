@@ -80,7 +80,7 @@ class ProjectService
     }
     public function getByIDactionplan($id, $perPage)
     {
-        $projects = Project::with('department')
+        $query = Project::with('department')
             ->with('activity')
             ->with('activity.activityspendmoney')
             ->with('activity.activityspendmoney.ActivityDetailSpendmoney')
@@ -96,13 +96,19 @@ class ProjectService
             ->with('projectOkr.okr')
             ->with('projectOkr.okr.unit')
             ->whereNull('deleted_at')
-            ->where('id_action_plan', $id)
-            ->orderBy('project_number')
+            ->where('id_action_plan', $id);
+
+        // ถ้าไม่ใช่ superadmin ให้เห็นเฉพาะโครงการที่เปิด
+        if (auth()->user()->role != 2) {
+            $query->where('status', 1);
+        }
+
+        $projects = $query->orderBy('project_number')
             ->paginate($perPage)
             ->withQueryString();
 
         $projects->getCollection()->transform(function ($project) {
-            $projectId = $project->project_id; // <- ใช้อันนี้ให้ตรง schema
+            $projectId = $project->project_id;
 
             if (!$projectId) {
                 $project->count_activity = 0;
@@ -110,11 +116,11 @@ class ProjectService
                 return $project;
             }
 
-            $query = Activity::where('id_project', $projectId)
+            $activityQuery = Activity::where('id_project', $projectId)
                 ->whereNull('deleted_at');
 
-            $project->count_activity = (clone $query)->count();
-            $project->count_activity_report = (clone $query)
+            $project->count_activity = (clone $activityQuery)->count();
+            $project->count_activity_report = (clone $activityQuery)
                 ->where('status_report', 1)
                 ->count();
 
@@ -123,7 +129,6 @@ class ProjectService
 
         return $projects;
     }
-
 
     public function getByIDproject($id, $perPage)
     {
@@ -183,15 +188,21 @@ class ProjectService
         return $project;
     }
 
-
     public function getByIDYear($id, $perPage)
     {
-
-        $project = Project::where('id_year', $id)
-            ->orderBy('project_number')
+        $query = Project::where('id_year', $id)
             ->with('actionplan')
             ->with('actionplan.strategic')
-            ->paginate($perPage);
+            ->whereNull('deleted_at');
+
+        // ถ้าไม่ใช่ superadmin ให้เห็นเฉพาะ project ที่เปิด
+        if (auth()->user()->role != 2) {
+            $query->where('status', 1);
+        }
+
+        $project = $query->orderBy('project_number')
+            ->paginate($perPage)
+            ->withQueryString();
 
         $project->getCollection()->transform(function ($project) {
             $project->action_plan_number = optional($project->actionplan)->action_plan_number;

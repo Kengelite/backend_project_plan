@@ -63,78 +63,54 @@ class StrategicService
 
         return $strategic;
     }
-    public function getByYear($id,  $perPage)
+
+    public function getByYear($id, $perPage)
     {
-        // $strategics = DB::table('strategic')
-        //     ->leftJoin('action_plan', 'strategic.strategic_id', '=', 'action_plan.id_strategic')
-        //     ->leftJoin('project', 'action_plan.action_plan_id', '=', 'project.id_action_plan')
-        //     ->leftJoin('activity', 'project.project_id', '=', 'activity.id_project')
-        //     ->select(
-        //         'strategic.strategic_id',
-        //         'strategic.strategic_name',
-        //         'strategic.strategic_number',
-        //         'strategic.budget',
-        //         'strategic.spend_money',
-        //         'strategic.status',
-        //         'strategic.id_year',
-        //         DB::raw('COUNT(DISTINCT project.project_id) as projects_count'),
-        //         DB::raw('COUNT(DISTINCT action_plan.action_plan_id) as action_plan_count')
-        //     )
-        //     ->where('strategic.id_year', $id)
-        //     ->whereNull('strategic.deleted_at')
-        //     ->whereNull('action_plan.deleted_at')
-        //     ->whereNull('project.deleted_at')
-        //     ->whereNull('activity.deleted_at')
-        //     ->groupBy(
-        //         'strategic.strategic_id',
-        //         'strategic.strategic_name',
-        //         'strategic.strategic_number',
-        //         'strategic.budget',
-        //         'strategic.spend_money',
-        //         'strategic.status',
-        //          'strategic.id_year'
-
-        //     )
-        //     ->orderBy('strategic.strategic_number')
-        //     ->paginate(10)
-        //     ->withQueryString();
-
-        $strategics = Strategic::with('actionPlans.project')
+        $query = Strategic::with('actionPlans.project')
             ->addSelect([
                 'activities_sum_actual_money' => Activity::selectRaw('CAST(COALESCE(SUM(activity.actual_money),0) AS DECIMAL(10,2))')
-
-                    ->leftjoin('project', 'project.project_id', '=', 'activity.id_project')
-                    ->leftjoin('action_plan', 'action_plan.action_plan_id', '=', 'project.id_action_plan')
-                    ->whereColumn(
-                        'action_plan.id_strategic',
-                        'strategic.strategic_id'
-                    )
+                    ->leftJoin('project', 'project.project_id', '=', 'activity.id_project')
+                    ->leftJoin('action_plan', 'action_plan.action_plan_id', '=', 'project.id_action_plan')
+                    ->whereColumn('action_plan.id_strategic', 'strategic.strategic_id')
             ])
-            // ->withSum('budget')
             ->where('id_year', $id)
-            ->whereNull('deleted_at')
-            ->orderBy('strategic_number')
+            ->whereNull('deleted_at');
+
+        // ถ้าไม่ใช่ superadmin ให้เห็นเฉพาะรายการที่เปิด
+        if (auth()->user()->role != 2) {
+            $query->where('status', 1);
+        }
+
+        $strategics = $query->orderBy('strategic_number')
             ->paginate($perPage)
             ->withQueryString();
 
-
         foreach ($strategics as $strategic) {
-
             $strategic->budget = (float) $strategic->budget;
             $strategic->spend_money = (float) $strategic->spend_money;
-            $strategic->activities_sum_actual_money =
-                (float) $strategic->activities_sum_actual_money;
+            $strategic->activities_sum_actual_money = (float) $strategic->activities_sum_actual_money;
 
-            $strategic->action_plan_count = ActionPlan::where('id_strategic', $strategic->strategic_id)
-                ->whereNull('deleted_at')
-                ->count();
+            $actionPlanQuery = ActionPlan::where('id_strategic', $strategic->strategic_id)
+                ->whereNull('deleted_at');
+
+            // ถ้าไม่ใช่ superadmin ให้นับเฉพาะ action plan ที่เปิด
+            if (auth()->user()->role != 2) {
+                $actionPlanQuery->where('status', 1);
+            }
+
+            $strategic->action_plan_count = $actionPlanQuery->count();
 
             $strategic->projects_count = Project::whereIn('id_action_plan', function ($query) use ($strategic) {
-                $query->select('action_plan_id')
-                    ->from('Action_Plan')
-                    ->where('id_strategic', $strategic->strategic_id)
-                    ->whereNull('deleted_at');
-            })
+                    $query->select('action_plan_id')
+                        ->from('action_plan')
+                        ->where('id_strategic', $strategic->strategic_id)
+                        ->whereNull('deleted_at');
+
+                    // ถ้าไม่ใช่ superadmin ให้นับเฉพาะ action plan ที่เปิด
+                    if (auth()->user()->role != 2) {
+                        $query->where('status', 1);
+                    }
+                })
                 ->whereNull('deleted_at')
                 ->count();
         }

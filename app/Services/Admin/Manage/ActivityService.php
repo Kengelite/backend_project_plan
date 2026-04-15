@@ -114,16 +114,21 @@ class ActivityService
 
     public function getByIDactivity($id, $perPage)
     {
+        $query = Activity::with('department')
+            ->where('id_project', $id);
 
+        // ถ้าไม่ใช่ superadmin ให้เห็นเฉพาะ activity ที่เปิด
+        if (auth()->user()->role != 2) {
+            $query->where('status', 1);
+        }
 
-        $activity = Activity::with('department')
-            ->where('id_project', $id)
-            ->where('status', 1)
-            ->orderBy('id')
+        $activity = $query->orderBy('id')
             ->paginate($perPage)
             ->withQueryString();
+
         return $activity;
     }
+
     public function getByIDactivityAdmin($id, $perPage)
     {
         $activities = Activity::with([
@@ -195,15 +200,27 @@ class ActivityService
     {
         $userId = Auth::id();
 
-        $activityUser = ActivityUser::where('id_user', $userId)
+        $activityUsers = ActivityUser::where('id_user', $userId)
             ->where('id_year', $id)
-            ->whereHas('Activity', function ($query) {
-                $query->where('status', 1);
-            })
-            ->with('activity')
+            ->with([
+                'activity',
+                'activity.project'
+            ])
             ->paginate($perPage);
 
-        return $activityUser;
+        $activityUsers->getCollection()->transform(function ($item) {
+            if ($item->activity) {
+                $item->activity->project_number = optional($item->activity->project)->project_number;
+                $item->activity->project_name = optional($item->activity->project)->project_name;
+                $item->activity->id_project = optional($item->activity->project)->project_id;
+                $item->activity->project_budget = optional($item->activity->project)->budget;
+                $item->activity->project_spend_money = optional($item->activity->project)->spend_money;
+            }
+
+            return $item;
+        });
+
+        return $activityUsers;
     }
 
     public function getByIDYear($id, $perPage)

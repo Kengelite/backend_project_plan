@@ -14,6 +14,8 @@ use App\Http\Controllers\Admin\Manage\PrincipleController;
 use App\Http\Controllers\Admin\Manage\TypeController;
 use App\Http\Controllers\Admin\Manage\DepartmentController;
 use App\Http\Controllers\Admin\Manage\PositionController;
+use App\Http\Controllers\Admin\Manage\ActivitySpendMoneyController;
+use App\Http\Controllers\Admin\Manage\ActivityDetailSpendMoneyController;
 use App\Http\Controllers\Admin\Manage\UnitController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -98,11 +100,12 @@ Route::group(['prefix' => '/v1'], function () {
 
 
         Route::resource('activitydetail', ActivitydetailController::class);
+        Route::post('activitydetailprice', [ActivitydetailController::class, 'dataspendprice']);
         Route::post('activitydetailbyidactivity', [ActivitydetailController::class, 'activitydetailByIdactivity']);
         Route::post('activitydetailbyidactivityadmin', [ActivitydetailController::class, 'activitydetailByIdactivityAdmin']);
         Route::post('updatestatusactivitydetail', [ActivitydetailController::class, 'updatestatusActivityDetail']);
         Route::delete('deleteactivitydetail', [ActivitydetailController::class, 'destroy']);
-
+        Route::get('activitydetail/price/{id}', [ActivitydetailController::class, 'datailprice']);
 
 
         Route::resource('projectuserall', ProjectUserController::class);
@@ -113,5 +116,10 @@ Route::group(['prefix' => '/v1'], function () {
 
         Route::resource('unitall', UnitController::class);
         Route::get('unit', [UnitController::class, 'user']);
+
+        Route::resource('activityspendmoney', ActivitySpendMoneyController::class);
+        Route::get('/activityspendmoney/activity/{id}', [ActivitySpendmoneyController::class, 'getbyidactivity']);
+
+        Route::resource('activitydetailspendmoney', ActivityDetailSpendMoneyController::class);
     });
 });
