@@ -7,6 +7,9 @@ use App\Http\Controllers\Admin\Manage\ProjectController;
 use App\Http\Controllers\Admin\Manage\ProjectUserController;
 use App\Http\Controllers\Admin\Manage\ActivitydetailController;
 use App\Http\Controllers\Admin\Manage\UserOkrController;
+use App\Http\Controllers\Admin\Manage\ActivitySpendMoneyController;
+use App\Http\Controllers\Admin\Manage\ActivityDetailSpendMoneyController;
+use App\Http\Controllers\Admin\Manage\UnitController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\Manage\YearController;
@@ -25,5 +28,13 @@ Route::group(['prefix' => '/v1'], function () {
 
         Route::resource('okruser', UserOkrController::class);
         Route::post('okruserid', [UserOkrController::class, 'getactivityuseryear']);
+
+        Route::resource('activityspendmoney', ActivitySpendMoneyController::class);
+        Route::get('/activityspendmoney/activity/{id}', [ActivitySpendmoneyController::class, 'getbyidactivity']);
+
+        Route::resource('activitydetailspendmoney', ActivityDetailSpendMoneyController::class);
+
+        Route::resource('unitall', UnitController::class);
+        Route::get('unit', [UnitController::class, 'user']);
     });
 });
