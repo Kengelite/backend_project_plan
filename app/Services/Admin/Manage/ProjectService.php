@@ -116,11 +116,23 @@ class ProjectService
                 return $project;
             }
 
-            $activityQuery = Activity::where('id_project', $projectId)
-                ->whereNull('deleted_at');
+            $project->count_activity_real = Activity::where('id_project', $projectId)
+                ->whereNull('deleted_at')
+                ->count();
 
-            $project->count_activity = (clone $activityQuery)->count();
-            $project->count_activity_report = (clone $activityQuery)
+            $project->count_activity_report_real = Activity::where('id_project', $projectId)
+                ->whereNull('deleted_at')
+                ->where('status_report', 1)
+                ->count();
+
+            $project->count_activity = Activity::where('id_project', $projectId)
+                ->where('status', 1)
+                ->whereNull('deleted_at')
+                ->count();
+                
+            $project->count_activity_report = Activity::where('id_project', $projectId)
+                ->where('status', 1)
+                ->whereNull('deleted_at')
                 ->where('status_report', 1)
                 ->count();
 
@@ -207,6 +219,36 @@ class ProjectService
         $project->getCollection()->transform(function ($project) {
             $project->action_plan_number = optional($project->actionplan)->action_plan_number;
             $project->strategic_number = optional(optional($project->actionplan)->strategic)->strategic_number;
+
+            $activitiesQuery = DB::table('activity')
+                ->where('id_project', $project->project_id)
+                ->whereNull('deleted_at');
+
+            // ถ้าไม่ใช่ superadmin ให้นับเฉพาะ activity ที่เปิด
+            if (auth()->user()->role != 2) {
+                $activitiesQuery->where('status', 1);
+            }
+
+            $project->count_activity_real = (clone $activitiesQuery)
+                ->whereNull('deleted_at')
+                ->count();
+
+            $project->count_activity_report_real = (clone $activitiesQuery)
+                ->whereNull('deleted_at')
+                ->where('status_report', 1)
+                ->count();
+
+            $project->count_activity = (clone $activitiesQuery)
+                ->where('status', 1)
+                ->whereNull('deleted_at')
+                ->count();
+
+            $project->count_activity_report = (clone $activitiesQuery)
+                ->where('status', 1)
+                ->whereNull('deleted_at')
+                ->where('status_report', 1)
+                ->count();
+
             return $project;
         });
 

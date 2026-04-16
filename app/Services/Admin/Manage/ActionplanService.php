@@ -108,6 +108,21 @@ class ActionplanService
             ->paginate($perPage)
             ->withQueryString();
 
+        $actionPlan->getCollection()->transform(function ($item) {
+            $item->count_projects = DB::table('project')
+                ->where('id_action_plan', $item->action_plan_id)
+                ->where('status', 1)
+                ->whereNull('deleted_at')
+                ->count();
+
+            $item->count_projects_real = DB::table('project')
+                ->where('id_action_plan', $item->action_plan_id)
+                ->whereNull('deleted_at')
+                ->count();
+
+            return $item;
+        });
+
         return $actionPlan;
     }
     // public function store(StrategicDTO $strategicDTO)

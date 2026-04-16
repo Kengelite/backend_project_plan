@@ -53,6 +53,7 @@ class ProjectUserService
         });
         return $projectUsers;
     }
+    
     public function getByIDYear($id, $perPage)
     {
         $userId = Auth::id();
@@ -60,36 +61,38 @@ class ProjectUserService
         $projectUsers = ProjectUser::where('id_user', $userId)
             ->where('id_year', $id)
             ->whereHas('project', function ($query) {
-                $query->where('status', 1); // กรองจาก status ของ project
+                $query->where('status', 1)
+                    ->whereNull('deleted_at');
             })
-            ->with('project.actionplan.strategic') // โหลดข้อมูล project ที่เชื่อมกับ project_user
-            ->paginate($perPage);
+            ->with('project.actionplan.strategic')
+            ->paginate($perPage)
+            ->withQueryString();
 
         $projectUsers->getCollection()->transform(function ($projectUser) {
-            // A. ดึง project ที่โหลดมาจาก with('project')
             $project = $projectUser->project;
 
             if ($project) {
                 $activitiesQuery = DB::table('activity')
-                    ->where('id_project', $project->id) // ใช้ $project->id แทน $projectUser->project_id
+                    ->where('id_project', $project->project_id)   // แก้จาก $project->id
                     ->whereNull('deleted_at');
 
-                // B. นับจำนวน activity ทั้งหมด
-                $project->count_activity = (clone $activitiesQuery)->count();
+                $project->count_activity = (clone $activitiesQuery)
+                    ->where('status', 1)
+                    ->count();
 
-                // C. นับเฉพาะที่รายงานแล้ว
                 $project->count_activity_report = (clone $activitiesQuery)
                     ->where('status_report', 1)
                     ->count();
 
-                $project->action_plan_number = optional($project->actionPlan)->action_plan_number;
-                $project->id_action_plan = optional($project->actionPlan)->action_plan_id;
-                $project->id_strategic = optional($project->actionPlan)->id_strategic;
-                $project->strategic_number = optional(optional($project->actionPlan)->strategic)->strategic_number;
+                $project->action_plan_number = optional($project->actionplan)->action_plan_number;
+                $project->id_action_plan = optional($project->actionplan)->action_plan_id;
+                $project->id_strategic = optional($project->actionplan)->id_strategic;
+                $project->strategic_number = optional(optional($project->actionplan)->strategic)->strategic_number;
             }
 
             return $projectUser;
         });
+
         return $projectUsers;
     }
 

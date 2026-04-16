@@ -25,6 +25,7 @@ Route::group(['prefix' => '/v1'], function () {
         Route::post('year', [YearController::class, 'yealUser']);
         Route::post('activityuserallbyidyear', [ActivityController::class, 'getActivityUserYear']);
         Route::resource('activitydetail', ActivitydetailController::class);
+        Route::get('activity/responsible/project', [ActivityController::class, 'getActivityResponsibleByProject']);
 
         Route::resource('okruser', UserOkrController::class);
         Route::post('okruserid', [UserOkrController::class, 'getactivityuseryear']);

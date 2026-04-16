@@ -101,4 +101,8 @@ class Activity extends Model
     {
         return $this->hasMany(IndicatorActivity::class, 'id_activity');
     }
+    public function activityDetails()
+    {
+        return $this->hasMany(ActivityDetail::class, 'id_activity', 'activity_id');
+    }
 }

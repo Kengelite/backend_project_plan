@@ -15,6 +15,7 @@ use App\Models\ObjectiveActivity;
 use App\Models\OkrDetailActivity;
 use App\Models\ProjectUser;
 use App\Models\Project;
+use App\Models\ActivityDetail;
 use App\Models\StyleActivtiyDetail;
 use Illuminate\Notifications\Action;
 use Illuminate\Support\Facades\Auth;
@@ -115,7 +116,13 @@ class ActivityService
     public function getByIDactivity($id, $perPage)
     {
         $query = Activity::with('department')
-            ->where('id_project', $id);
+        ->withCount([
+            'activityDetails as activity_detail_count' => function ($q) {
+                $q->whereNull('deleted_at');
+            }
+        ])
+        ->where('id_project', $id)
+        ->whereNull('deleted_at');
 
         // ถ้าไม่ใช่ superadmin ให้เห็นเฉพาะ activity ที่เปิด
         if (auth()->user()->role != 2) {
@@ -204,17 +211,28 @@ class ActivityService
             ->where('id_year', $id)
             ->with([
                 'activity',
-                'activity.project'
+                'activity.project',
+                'activity.project.actionplan',
             ])
             ->paginate($perPage);
 
         $activityUsers->getCollection()->transform(function ($item) {
             if ($item->activity) {
-                $item->activity->project_number = optional($item->activity->project)->project_number;
-                $item->activity->project_name = optional($item->activity->project)->project_name;
-                $item->activity->id_project = optional($item->activity->project)->project_id;
-                $item->activity->project_budget = optional($item->activity->project)->budget;
-                $item->activity->project_spend_money = optional($item->activity->project)->spend_money;
+                $project = optional($item->activity->project);
+                $actionplan = optional($project->actionplan);
+
+                $item->activity->project_number = $project->project_number;
+                $item->activity->project_name = $project->project_name;
+                $item->activity->id_project = $project->project_id;
+                $item->activity->project_budget = $project->budget;
+                $item->activity->project_spend_money = $project->spend_money;
+
+                $item->activity->action_plan_number = $actionplan->action_plan_number;
+                $item->activity->action_plan_name = $actionplan->name_ap;
+
+                $item->activity->activity_detail_count = ActivityDetail::where('id_activity', $item->activity->activity_id)
+                    ->whereNull('deleted_at')
+                    ->count();
             }
 
             return $item;
@@ -225,13 +243,25 @@ class ActivityService
 
     public function getByIDYear($id, $perPage)
     {
-
-        $project = Activity::where('id_year', $id)
+        $query = Activity::where('id_year', $id)
             ->with('project')
             ->with('project.actionplan')
             ->with('project.actionplan.strategic')
-            ->orderBy('activity_id')
-            ->paginate($perPage);
+            ->withCount([
+                'activityDetails as activity_detail_count' => function ($q) {
+                    $q->whereNull('deleted_at');
+                }
+            ])
+            ->whereNull('deleted_at');
+
+        // ถ้าไม่ใช่ superadmin ให้เห็นเฉพาะ activity ที่เปิด
+        if (auth()->user()->role != 2) {
+            $query->where('status', 1);
+        }
+
+        $project = $query->orderBy('activity_id')
+            ->paginate($perPage)
+            ->withQueryString();
 
         $project->getCollection()->transform(function ($activity) {
             $activity->project_number = optional($activity->project)->project_number;
@@ -242,6 +272,30 @@ class ActivityService
         });
 
         return $project;
+    }
+
+    public function getResponsibleByProject($id_project, $perPage)
+    {
+        $userId = Auth::id();
+
+        $activity = Activity::with('department')
+            ->with('project')
+            ->withCount([
+                'activityDetails as activity_detail_count' => function ($q) {
+                    $q->whereNull('deleted_at');
+                }
+            ])
+            ->where('id_project', $id_project)
+            ->where('status', 1)
+            ->whereNull('deleted_at')
+            ->whereHas('activityUsers', function ($query) use ($userId) {
+                $query->where('id_user', $userId);
+            })
+            ->orderBy('id')
+            ->paginate($perPage)
+            ->withQueryString();
+
+        return $activity;
     }
 
     public function sendEmail($id, $perPage)

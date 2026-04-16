@@ -53,6 +53,7 @@ class StrategicService
             // ->with('actionPlans')
             ->where('Strategic.id_year', $id)
             ->where('Strategic.status', '1')
+            ->whereNull('Strategic.deleted_at')
             ->orderBy('Strategic.strategic_number')
             ->paginate(10)
             ->withQueryString();
@@ -112,6 +113,7 @@ class StrategicService
                     }
                 })
                 ->whereNull('deleted_at')
+                ->where('status', 1)
                 ->count();
         }
 
