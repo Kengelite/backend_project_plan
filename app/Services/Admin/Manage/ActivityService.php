@@ -162,17 +162,11 @@ class ActivityService
         ])
             ->whereNull('deleted_at')
             ->where('id_project', $id)
-            // ->whereHas('activityspendmoney.ActivityDetailSpendmoney', function ($q) {
-            //     $q->whereNull('deleted_at');
-            // })
+            ->where('status', 1)
             ->orderBy('id')
             ->paginate($perPage)
             ->withQueryString();
 
-        // นับจำนวน activity_detail ของแต่ละ activity แบบแยก
-
-        // •	getCollection() → ดึงเฉพาะ array ของผลลัพธ์จาก paginator
-        // •	transform(...) → ใช้เปลี่ยนค่าทุกแถวใน collection
         $activities->getCollection()->transform(function ($activity) {
             $activity->activity_detail_count = DB::table('Activity_detail')
                 ->where('id_activity', $activity->activity_id)
@@ -185,6 +179,7 @@ class ActivityService
 
             return $activity;
         });
+
         return $activities;
     }
 
@@ -205,16 +200,25 @@ class ActivityService
 
     public function getByIDUser($id, $perPage)
     {
-        $userId = Auth::id();
+        $user = Auth::user();
+        $userId = $user->id;
 
-        $activityUsers = ActivityUser::where('id_user', $userId)
+        $query = ActivityUser::where('id_user', $userId)
             ->where('id_year', $id)
             ->with([
                 'activity',
                 'activity.project',
                 'activity.project.actionplan',
-            ])
-            ->paginate($perPage);
+            ]);
+
+        // ถ้าไม่ใช่ superadmin ให้เห็นเฉพาะ activity ที่ status = 1
+        if ($user->role !== 'superadmin') {
+            $query->whereHas('activity', function ($q) {
+                $q->where('status', 1);
+            });
+        }
+
+        $activityUsers = $query->paginate($perPage);
 
         $activityUsers->getCollection()->transform(function ($item) {
             if ($item->activity) {

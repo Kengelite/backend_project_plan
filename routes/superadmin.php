@@ -29,6 +29,7 @@ use App\Http\Controllers\Admin\Manage\UserOkrController;
 use App\Http\Controllers\Admin\Manage\ActivitySpendMoneyController;
 use App\Http\Controllers\Admin\Manage\FileDataUploadController;
 use App\Http\Controllers\Admin\Manage\RoundFileUploadController;
+use App\Http\Controllers\Admin\Manage\OkrReportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
@@ -186,7 +187,7 @@ Route::group(['prefix' => '/v1'], function () {
 
         Route::resource('activitydetailspendmoney', ActivityDetailSpendMoneyController::class);
 
-
+        Route::resource('okrreport', OkrReportController::class);
 
 
         Route::resource('filedataupload', FileDataUploadController::class);
