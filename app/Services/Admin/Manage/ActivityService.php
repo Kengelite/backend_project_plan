@@ -258,7 +258,6 @@ class ActivityService
             ])
             ->whereNull('deleted_at');
 
-        // ถ้าไม่ใช่ superadmin ให้เห็นเฉพาะ activity ที่เปิด
         if (auth()->user()->role != 2) {
             $query->where('status', 1);
         }

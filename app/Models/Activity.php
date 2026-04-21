@@ -105,4 +105,8 @@ class Activity extends Model
     {
         return $this->hasMany(ActivityDetail::class, 'id_activity', 'activity_id');
     }
+    public function actionplan()
+    {
+        return $this->belongsTo(ActionPlan::class, 'id_action_plan', 'action_plan_id');
+    }
 }

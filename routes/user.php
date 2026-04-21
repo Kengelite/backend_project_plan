@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\Manage\UserOkrController;
 use App\Http\Controllers\Admin\Manage\ActivitySpendMoneyController;
 use App\Http\Controllers\Admin\Manage\ActivityDetailSpendMoneyController;
 use App\Http\Controllers\Admin\Manage\UnitController;
+use App\Http\Controllers\Admin\Manage\OkrReportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\Manage\YearController;
@@ -37,5 +38,7 @@ Route::group(['prefix' => '/v1'], function () {
 
         Route::resource('unitall', UnitController::class);
         Route::get('unit', [UnitController::class, 'user']);
+
+        Route::resource('okrreport', OkrReportController::class);
     });
 });

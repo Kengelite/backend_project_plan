@@ -17,6 +17,7 @@ use App\Http\Controllers\Admin\Manage\PositionController;
 use App\Http\Controllers\Admin\Manage\ActivitySpendMoneyController;
 use App\Http\Controllers\Admin\Manage\ActivityDetailSpendMoneyController;
 use App\Http\Controllers\Admin\Manage\UnitController;
+use App\Http\Controllers\Admin\Manage\OkrReportController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -121,5 +122,7 @@ Route::group(['prefix' => '/v1'], function () {
         Route::get('/activityspendmoney/activity/{id}', [ActivitySpendmoneyController::class, 'getbyidactivity']);
 
         Route::resource('activitydetailspendmoney', ActivityDetailSpendMoneyController::class);
+
+        Route::resource('okrreport', OkrReportController::class);
     });
 });
