@@ -66,15 +66,15 @@ class ActivityDetailService
     }
     public function getByIDactivityAdmin($id, $perPage)
     {
-        // $activityDetail = ActivityDetail::where('id_activity', $id)
-        //     ->orderBy('report_data', 'DESC')
-        //     ->paginate($perPage)->withQueryString();
-
-        $activityDetail  = DB::table('Activity_detail')->where('id_activity', $id)
+        $activityDetail = DB::table('Activity_detail')
+            ->leftJoin('users', 'users.id', '=', 'Activity_detail.id_employee')
+            ->where('Activity_detail.id_activity', $id)
+            ->whereNull('Activity_detail.deleted_at')
             ->select('Activity_detail.*', 'users.name')
-            ->leftJoin('users', 'id', 'id_employee')
-            ->orderBy('Activity_detail.deleted_at', 'ASC')
-            ->paginate($perPage)->withQueryString();
+            ->orderBy('Activity_detail.created_at', 'DESC')
+            ->paginate($perPage)
+            ->withQueryString();
+
         return $activityDetail;
     }
     public function getByIDactivity($id, $perPage)

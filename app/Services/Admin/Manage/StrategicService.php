@@ -41,26 +41,32 @@ class StrategicService
 
     public function getByYearForAdd($id)
     {
-
-        $strategic =
-            DB::table('Strategic')
-            ->leftJoin('Year', 'Strategic.id_year', 'Year.year_id')
+        $strategic = DB::table('Strategic')
+            ->leftJoin('Year', 'Strategic.id_year', '=', 'Year.year_id')
+            ->leftJoin('Action_Plan', function ($join) {
+                $join->on('Strategic.strategic_id', '=', 'Action_Plan.id_strategic')
+                    ->whereNull('Action_Plan.deleted_at');
+            })
             ->select(
                 'Strategic.strategic_id',
                 'Strategic.strategic_name',
-                'Strategic.strategic_number'
+                'Strategic.strategic_number',
+                'Strategic.budget',
+                DB::raw('COALESCE(SUM(Action_Plan.budget), 0) as actionplan_budget_sum'),
+                DB::raw('(Strategic.budget - COALESCE(SUM(Action_Plan.budget), 0)) as remain_budget')
             )
-            // ->with('actionPlans')
             ->where('Strategic.id_year', $id)
             ->where('Strategic.status', '1')
             ->whereNull('Strategic.deleted_at')
+            ->groupBy(
+                'Strategic.strategic_id',
+                'Strategic.strategic_name',
+                'Strategic.strategic_number',
+                'Strategic.budget'
+            )
             ->orderBy('Strategic.strategic_number')
             ->paginate(10)
             ->withQueryString();
-        // Strategic::where('id_year', $id)
-        //     ->orderBy('id_year')
-        //     ->paginate(10)
-        //     ->withQueryString();
 
         return $strategic;
     }
