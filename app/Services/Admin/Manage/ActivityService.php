@@ -2,6 +2,7 @@
 
 namespace App\Services\Admin\Manage;
 
+
 use App\Dto\ActivityDTO;
 use App\Models\ActionPlan;
 use App\Models\Activity;
@@ -20,6 +21,7 @@ use App\Models\StyleActivtiyDetail;
 use Illuminate\Notifications\Action;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class ActivityService
@@ -115,23 +117,140 @@ class ActivityService
 
     public function getByIDactivity($id, $perPage)
     {
-        $query = Activity::with('department')
-        ->withCount([
-            'activityDetails as activity_detail_count' => function ($q) {
-                $q->whereNull('deleted_at');
-            }
-        ])
-        ->where('id_project', $id)
-        ->whereNull('deleted_at');
+        $query = Activity::with([
+                // หน่วยงาน / ปี
+                'department',
+                'year',
+
+                // โครงการ > กลยุทธ์ > ยุทธศาสตร์
+                'project',
+                'project.department',
+                'project.year',
+                'project.actionplan',
+                'project.actionplan.strategic',
+
+                // วัตถุประสงค์
+                'ObjectiveActivity',
+
+                // ผู้รับผิดชอบ
+                'ActivityUsers',
+                'ActivityUsers.user',
+                'ActivityUsers.user.position',
+
+                // ลักษณะโครงการ / ธรรมาภิบาล
+                'activityStyle',
+                'activityPrinciple',
+
+                // ตัวชี้วัดกิจกรรม
+                'activityIndicator',
+                'activityIndicator.unit',
+
+                // OKR
+                'activityOkr',
+                'activityOkr.okr',
+                'activityOkr.okr.unit',
+
+                // รายละเอียดงบประมาณ
+                'activityspendmoney',
+                'activityspendmoney.unit',
+                'activityspendmoney.ActivityDetailSpendmoney' => function ($q) {
+                    $q->whereNull('deleted_at');
+                },
+            ])
+            ->withCount([
+                'activityDetails as activity_detail_count' => function ($q) {
+                    $q->whereNull('deleted_at');
+                }
+            ])
+            ->where('id_project', $id)
+            ->whereNull('deleted_at');
 
         // ถ้าไม่ใช่ superadmin ให้เห็นเฉพาะ activity ที่เปิด
-        if (auth()->user()->role != 2) {
+        if (auth()->user()->role != 2 && auth()->user()->role !== 'superadmin') {
             $query->where('status', 1);
         }
 
         $activity = $query->orderBy('id')
             ->paginate($perPage)
             ->withQueryString();
+
+        $activity->getCollection()->transform(function ($item) {
+            $project = optional($item->project);
+            $actionplan = optional($project->actionplan);
+            $strategic = optional($actionplan->strategic);
+            $department = optional($item->department);
+            $projectDepartment = optional($project->department);
+            $year = optional($item->year);
+            $projectYear = optional($project->year);
+
+            // -------------------------
+            // project
+            // -------------------------
+            $item->project_id = $project->project_id;
+            $item->id_project = $project->project_id;
+            $item->project_number = $project->project_number;
+            $item->project_name = $project->project_name;
+            $item->project_budget = $project->budget;
+            $item->project_spend_money = $project->spend_money;
+
+            // -------------------------
+            // action plan
+            // -------------------------
+            $item->action_plan_number = $actionplan->action_plan_number;
+            $item->actionplan_number = $actionplan->action_plan_number;
+            $item->action_plan_name = $actionplan->name_ap;
+            $item->name_ap = $actionplan->name_ap;
+
+            // -------------------------
+            // strategic
+            // -------------------------
+            $item->strategic_number = $strategic->strategic_number;
+            $item->strategic_name = $strategic->strategic_name;
+
+            // -------------------------
+            // department
+            // ถ้า activity ไม่มี department ให้ fallback ไปใช้ project department
+            // -------------------------
+            $item->departments_name =
+                $department->departments_name
+                ?? $department->department_name
+                ?? $projectDepartment->departments_name
+                ?? $projectDepartment->department_name;
+
+            $item->department_name =
+                $department->department_name
+                ?? $department->departments_name
+                ?? $projectDepartment->department_name
+                ?? $projectDepartment->departments_name;
+
+            // -------------------------
+            // year
+            // -------------------------
+            $item->year_name = $year->year ?? $projectYear->year;
+            $item->budget_year = $year->year ?? $projectYear->year;
+
+            // -------------------------
+            // alias ให้ frontend อ่านง่าย
+            // -------------------------
+            $item->objective_activity = $item->ObjectiveActivity ?? [];
+            $item->activity_users = $item->ActivityUsers ?? [];
+            $item->activity_style = $item->activityStyle ?? [];
+            $item->activity_principle = $item->activityPrinciple ?? [];
+            $item->activity_indicator = $item->activityIndicator ?? [];
+            $item->activity_okr = $item->activityOkr ?? [];
+            $item->activityspendmoney = $item->activityspendmoney ?? [];
+
+            // alias เผื่อ frontend อ่าน camelCase
+            $item->objectiveActivity = $item->objective_activity;
+            $item->activityUsers = $item->activity_users;
+            $item->activityStyle = $item->activity_style;
+            $item->activityPrinciple = $item->activity_principle;
+            $item->activityIndicator = $item->activity_indicator;
+            $item->activityOkr = $item->activity_okr;
+            $item->activitySpendMoney = $item->activityspendmoney;
+
+            return $item;
+        });
 
         return $activity;
     }
@@ -207,12 +326,40 @@ class ActivityService
             ->where('id_year', $id)
             ->with([
                 'activity',
+                'activity.department',
+                'activity.year',
+
                 'activity.project',
                 'activity.project.actionplan',
+                'activity.project.actionplan.strategic',
+
+                'activity.ObjectiveActivity',
+
+                'activity.ActivityUsers',
+                'activity.ActivityUsers.user',
+                'activity.ActivityUsers.user.position',
+
+                'activity.activityStyle',
+
+                'activity.activityPrinciple',
+
+                'activity.activityIndicator',
+                'activity.activityIndicator.unit',
+
+                'activity.activityOkr',
+                'activity.activityOkr.okr',
+                'activity.activityOkr.okr.unit',
+
+                'activity.activityspendmoney',
+                'activity.activityspendmoney.unit',
+                'activity.activityspendmoney.ActivityDetailSpendmoney' => function ($q) {
+                    $q->whereNull('deleted_at');
+                },
             ]);
 
         // ถ้าไม่ใช่ superadmin ให้เห็นเฉพาะ activity ที่ status = 1
-        if ($user->role !== 'superadmin') {
+        // รองรับทั้งกรณี role เป็น 2 และเป็น string superadmin
+        if ($user->role != 2 && $user->role !== 'superadmin') {
             $query->whereHas('activity', function ($q) {
                 $q->where('status', 1);
             });
@@ -222,21 +369,39 @@ class ActivityService
 
         $activityUsers->getCollection()->transform(function ($item) {
             if ($item->activity) {
-                $project = optional($item->activity->project);
+                $activity = $item->activity;
+
+                $project = optional($activity->project);
                 $actionplan = optional($project->actionplan);
+                $strategic = optional($actionplan->strategic);
 
-                $item->activity->project_number = $project->project_number;
-                $item->activity->project_name = $project->project_name;
-                $item->activity->id_project = $project->project_id;
-                $item->activity->project_budget = $project->budget;
-                $item->activity->project_spend_money = $project->spend_money;
+                // project
+                $activity->project_number = $project->project_number;
+                $activity->project_name = $project->project_name;
+                $activity->id_project = $project->project_id;
+                $activity->project_budget = $project->budget;
+                $activity->project_spend_money = $project->spend_money;
 
-                $item->activity->action_plan_number = $actionplan->action_plan_number;
-                $item->activity->action_plan_name = $actionplan->name_ap;
+                // action plan
+                $activity->action_plan_number = $actionplan->action_plan_number;
+                $activity->action_plan_name = $actionplan->name_ap;
 
-                $item->activity->activity_detail_count = ActivityDetail::where('id_activity', $item->activity->activity_id)
+                // strategic
+                $activity->strategic_number = $strategic->strategic_number;
+                $activity->strategic_name = $strategic->strategic_name;
+
+                // count report
+                $activity->activity_detail_count = ActivityDetail::where('id_activity', $activity->activity_id)
                     ->whereNull('deleted_at')
                     ->count();
+
+                // ทำ alias เพิ่มให้ frontend อ่านง่าย
+                $activity->objective_activity = $activity->ObjectiveActivity ?? [];
+                $activity->activity_users = $activity->ActivityUsers ?? [];
+                $activity->activity_style = $activity->activityStyle ?? [];
+                $activity->activity_principle = $activity->activityPrinciple ?? [];
+                $activity->activity_indicator = $activity->activityIndicator ?? [];
+                $activity->activity_okr = $activity->activityOkr ?? [];
             }
 
             return $item;
@@ -277,29 +442,301 @@ class ActivityService
         return $project;
     }
 
-    public function getResponsibleByProject($id_project, $perPage)
-    {
-        $userId = Auth::id();
+public function getResponsibleByProject($id_project, $perPage)
+{
+    $userId = Auth::id();
 
-        $activity = Activity::with('department')
-            ->with('project')
-            ->withCount([
-                'activityDetails as activity_detail_count' => function ($q) {
-                    $q->whereNull('deleted_at');
-                }
-            ])
-            ->where('id_project', $id_project)
-            ->where('status', 1)
-            ->whereNull('deleted_at')
-            ->whereHas('activityUsers', function ($query) use ($userId) {
-                $query->where('id_user', $userId);
-            })
-            ->orderBy('id')
-            ->paginate($perPage)
-            ->withQueryString();
+    $activity = Activity::with([
+            'department',
+            'project',
+            'year',
+            'actionplan',
 
-        return $activity;
+            'ActivityUsers',
+            'ActivityUsers.user',
+
+            'ObjectiveActivity',
+
+            'activityOkr',
+            'activityOkr.okr',
+            'activityOkr.okr.unit',
+
+            'activityPrinciple',
+            'activityStyle',
+
+            'activityIndicator',
+            'activityIndicator.unit',
+
+            'activityspendmoney',
+            'activityspendmoney.unit',
+            'activityspendmoney.ActivityDetailSpendmoney' => function ($q) {
+                $q->whereNull('deleted_at');
+            },
+
+            'activityDetails',
+        ])
+        ->withCount([
+            'activityDetails as activity_detail_count' => function ($q) {
+                $q->whereNull('deleted_at');
+            }
+        ])
+        ->where('id_project', $id_project)
+        ->where('status', 1)
+        ->whereNull('deleted_at')
+        ->whereHas('ActivityUsers', function ($query) use ($userId) {
+            $query->where('id_user', $userId);
+        })
+        ->orderBy('id')
+        ->paginate($perPage)
+        ->withQueryString();
+
+    $activity->getCollection()->transform(function ($item) {
+        $project = optional($item->project);
+        $actionplan = optional($project->actionplan ?: $item->actionplan);
+        $strategic = optional($actionplan->strategic);
+        $department = optional($item->department);
+        $year = optional($item->year);
+
+        $item->project_id = $project->project_id;
+        $item->id_project = $project->project_id;
+        $item->project_number = $project->project_number;
+        $item->project_name = $project->project_name;
+
+        $item->action_plan_number = $actionplan->action_plan_number;
+        $item->actionplan_number = $actionplan->action_plan_number;
+        $item->action_plan_name = $actionplan->name_ap;
+        $item->name_ap = $actionplan->name_ap;
+
+        $item->strategic_number = $strategic->strategic_number;
+        $item->strategic_name = $strategic->strategic_name;
+
+        $item->departments_name =
+            $department->departments_name
+            ?? $department->department_name
+            ?? null;
+
+        $item->department_name =
+            $department->department_name
+            ?? $department->departments_name
+            ?? null;
+
+        $item->year_name = $year->year;
+        $item->budget_year = $year->year;
+
+        // alias ให้ frontend อ่านได้
+        $item->objective_activity = $item->ObjectiveActivity ?? [];
+        $item->activity_users = $item->ActivityUsers ?? [];
+        $item->activity_style = $item->activityStyle ?? [];
+        $item->activity_principle = $item->activityPrinciple ?? [];
+        $item->activity_indicator = $item->activityIndicator ?? [];
+        $item->activity_okr = $item->activityOkr ?? [];
+        $item->activityspendmoney = $item->activityspendmoney ?? [];
+
+        // camelCase alias
+        $item->objectiveActivity = $item->objective_activity;
+        $item->activityUsers = $item->activity_users;
+        $item->activityStyle = $item->activity_style;
+        $item->activityPrinciple = $item->activity_principle;
+        $item->activityIndicator = $item->activity_indicator;
+        $item->activityOkr = $item->activity_okr;
+        $item->activitySpendMoney = $item->activityspendmoney;
+
+        return $item;
+    });
+
+    return $activity;
+}
+
+private function firstExistingTable(array $tables)
+{
+    foreach ($tables as $table) {
+        if (Schema::hasTable($table)) {
+            return $table;
+        }
     }
+
+    return null;
+}
+
+private function firstExistingColumn($table, array $columns)
+{
+    if (!$table) return null;
+
+    foreach ($columns as $column) {
+        if (Schema::hasColumn($table, $column)) {
+            return $column;
+        }
+    }
+
+    return null;
+}
+
+private function attachOkrDataForWord($activities)
+{
+    $okrIds = collect();
+
+    foreach ($activities as $activity) {
+        foreach ($activity->activityOkr ?? [] as $item) {
+            $okrId = $item->id_okr ?? $item->OKR_id ?? $item->okr_id ?? null;
+
+            if ($okrId) {
+                $okrIds->push($okrId);
+            }
+        }
+    }
+
+    $okrIds = $okrIds->filter()->unique()->values();
+
+    if ($okrIds->isEmpty()) {
+        return;
+    }
+
+    $okrTable = $this->firstExistingTable([
+        'OKR',
+        'Okr',
+        'okr',
+        'okrs',
+        'OKRs',
+    ]);
+
+    if (!$okrTable) {
+        return;
+    }
+
+    $okrPk = $this->firstExistingColumn($okrTable, [
+        'okr_id',
+        'OKR_id',
+        'id_okr',
+        'id',
+    ]);
+
+    if (!$okrPk) {
+        return;
+    }
+
+    $okrs = DB::table($okrTable)
+        ->whereIn($okrPk, $okrIds)
+        ->get()
+        ->keyBy(function ($row) use ($okrPk) {
+            return (string) $row->{$okrPk};
+        });
+
+    foreach ($activities as $activity) {
+        foreach ($activity->activityOkr ?? [] as $item) {
+            $okrId = $item->id_okr ?? $item->OKR_id ?? $item->okr_id ?? null;
+
+            if ($okrId && isset($okrs[(string) $okrId])) {
+                $item->setAttribute('okr', $okrs[(string) $okrId]);
+            }
+        }
+    }
+}
+
+private function attachSpendMoneyDataForWord($activities)
+{
+    $activityDetailIds = collect();
+
+    foreach ($activities as $activity) {
+        foreach ($activity->activityDetails ?? [] as $detail) {
+            $detailId = $detail->activity_detail_id ?? $detail->id ?? $detail->id_activity_detail ?? null;
+
+            if ($detailId) {
+                $activityDetailIds->push($detailId);
+            }
+        }
+    }
+
+    $activityDetailIds = $activityDetailIds->filter()->unique()->values();
+
+    if ($activityDetailIds->isEmpty()) {
+        return;
+    }
+
+    $spendTable = $this->firstExistingTable([
+        'ActivitiyDetailSpendMoney',
+        'ActivitiyDetailSpendmoney',
+        'activity_detail_spendmoney',
+        'activity_detail_spend_money',
+        'ActivityDetailSpendMoney',
+        'ActivityDetailSpendmoney',
+        'activitiydetailspendmoney',
+    ]);
+
+    if (!$spendTable) {
+        return;
+    }
+
+    $fk = $this->firstExistingColumn($spendTable, [
+        'id_activity_detail',
+        'activity_detail_id',
+        'id_detail_activity',
+    ]);
+
+    if (!$fk) {
+        return;
+    }
+
+    $spendRows = DB::table($spendTable)
+        ->whereIn($fk, $activityDetailIds)
+        ->get();
+
+    $unitTable = $this->firstExistingTable([
+        'Unit',
+        'unit',
+        'units',
+    ]);
+
+    $unitPk = $this->firstExistingColumn($unitTable, [
+        'unit_id',
+        'id_unit',
+        'id',
+    ]);
+
+    $unitFk = $this->firstExistingColumn($spendTable, [
+        'id_unit',
+        'unit_id',
+    ]);
+
+    if ($unitTable && $unitPk && $unitFk) {
+        $unitIds = $spendRows
+            ->pluck($unitFk)
+            ->filter()
+            ->unique()
+            ->values();
+
+        $units = DB::table($unitTable)
+            ->whereIn($unitPk, $unitIds)
+            ->get()
+            ->keyBy(function ($row) use ($unitPk) {
+                return (string) $row->{$unitPk};
+            });
+
+        $spendRows = $spendRows->map(function ($row) use ($unitFk, $units) {
+            $unitId = $row->{$unitFk} ?? null;
+
+            if ($unitId && isset($units[(string) $unitId])) {
+                $row->unit = $units[(string) $unitId];
+            }
+
+            return $row;
+        });
+    }
+
+    $grouped = $spendRows->groupBy(function ($row) use ($fk) {
+        return (string) $row->{$fk};
+    });
+
+    foreach ($activities as $activity) {
+        foreach ($activity->activityDetails ?? [] as $detail) {
+            $detailId = $detail->activity_detail_id ?? $detail->id ?? $detail->id_activity_detail ?? null;
+
+            $detail->setAttribute(
+                'activitiydetailspendmoney',
+                $grouped->get((string) $detailId, collect())->values()->all()
+            );
+        }
+    }
+}
 
     public function sendEmail($id, $perPage)
     {

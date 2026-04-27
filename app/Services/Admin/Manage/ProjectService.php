@@ -200,60 +200,157 @@ class ProjectService
         return $project;
     }
 
-    public function getByIDYear($id, $perPage)
-    {
-        $query = Project::where('id_year', $id)
-            ->with('actionplan')
-            ->with('actionplan.strategic')
-            ->whereNull('deleted_at');
+public function getByIDYear($id, $perPage)
+{
+    $query = Project::where('id_year', $id)
+        ->with([
+            'year',
+            'department',
 
-        // ถ้าไม่ใช่ superadmin ให้เห็นเฉพาะ project ที่เปิด
-        if (auth()->user()->role != 2) {
-            $query->where('status', 1);
+            'actionplan',
+            'actionplan.strategic',
+
+            'Objective',
+
+            'projectUsers',
+            'projectUsers.user',
+            'projectUsers.user.position',
+
+            'projectStyle',
+            'projectPrinciple',
+
+            'projectOkr',
+            'projectOkr.okr',
+            'projectOkr.okr.unit',
+
+            'projectIndicator',
+            'projectIndicator.unit',
+
+            // สำคัญ: ดึงกิจกรรมใต้โครงการ
+            'activities',
+
+            // สำคัญ: ดึงรายการงบประมาณของกิจกรรม
+            'activities.activityspendmoney',
+            'activities.activityspendmoney.unit',
+
+            // สำคัญ: ดึงรายละเอียดงบประมาณที่ใช้จริง / รายละเอียดรายการ
+            'activities.activityspendmoney.ActivityDetailSpendmoney' => function ($q) {
+                $q->whereNull('deleted_at');
+            },
+        ])
+        ->whereNull('deleted_at');
+
+    // ถ้าไม่ใช่ superadmin ให้เห็นเฉพาะ project ที่เปิด
+    if (auth()->user()->role != 2 && auth()->user()->role !== 'superadmin') {
+        $query->where('status', 1);
+    }
+
+    $project = $query->orderBy('project_number')
+        ->paginate($perPage)
+        ->withQueryString();
+
+    $project->getCollection()->transform(function ($project) {
+        $actionplan = optional($project->actionplan);
+        $strategic = optional($actionplan->strategic);
+        $department = optional($project->department);
+        $year = optional($project->year);
+
+        // -------------------------
+        // ปีงบประมาณ
+        // -------------------------
+        $project->year_name = $year->year;
+        $project->budget_year = $year->year;
+
+        // -------------------------
+        // action plan / strategic
+        // -------------------------
+        $project->action_plan_number = $actionplan->action_plan_number;
+        $project->action_plan_name = $actionplan->name_ap;
+        $project->name_ap = $actionplan->name_ap;
+
+        $project->strategic_number = $strategic->strategic_number;
+        $project->strategic_name = $strategic->strategic_name;
+
+        // -------------------------
+        // department
+        // -------------------------
+        $project->departments_name = $department->departments_name;
+        $project->department_name = $department->department_name;
+
+        // -------------------------
+        // alias ให้ frontend อ่านง่าย
+        // -------------------------
+        $project->objective_project = $project->Objective ?? [];
+        $project->project_users = $project->projectUsers ?? [];
+        $project->project_style = $project->projectStyle ?? [];
+        $project->project_principle = $project->projectPrinciple ?? [];
+        $project->project_okr = $project->projectOkr ?? [];
+        $project->project_indicator = $project->projectIndicator ?? [];
+        $project->activities = $project->activities ?? [];
+
+        // -------------------------
+        // ดึงรายการงบประมาณจาก activity ใต้ project
+        // เพราะไม่มีตาราง ProjectSpendMoney
+        // -------------------------
+        $projectSpendmoney = collect();
+
+        foreach ($project->activities as $activity) {
+            if ($activity->activityspendmoney) {
+                foreach ($activity->activityspendmoney as $spendmoney) {
+                    $projectSpendmoney->push($spendmoney);
+                }
+            }
         }
 
-        $project = $query->orderBy('project_number')
-            ->paginate($perPage)
-            ->withQueryString();
+        // ส่งหลายชื่อ กัน frontend อ่านได้แน่นอน
+        $project->projectspendmoney = $projectSpendmoney->values()->all();
+        $project->project_spendmoney = $projectSpendmoney->values()->all();
+        $project->projectSpendmoney = $projectSpendmoney->values()->all();
+        $project->projectSpendMoney = $projectSpendmoney->values()->all();
 
-        $project->getCollection()->transform(function ($project) {
-            $project->action_plan_number = optional($project->actionplan)->action_plan_number;
-            $project->strategic_number = optional(optional($project->actionplan)->strategic)->strategic_number;
+        // -------------------------
+        // alias เผื่อ frontend อ่าน camelCase
+        // -------------------------
+        $project->objectiveProject = $project->objective_project;
+        $project->projectUsers = $project->project_users;
+        $project->projectStyle = $project->project_style;
+        $project->projectPrinciple = $project->project_principle;
+        $project->projectOkr = $project->project_okr;
+        $project->projectIndicator = $project->project_indicator;
 
-            $activitiesQuery = DB::table('activity')
-                ->where('id_project', $project->project_id)
-                ->whereNull('deleted_at');
+        // -------------------------
+        // count activity
+        // -------------------------
+        $activitiesQuery = DB::table('activity')
+            ->where('id_project', $project->project_id)
+            ->whereNull('deleted_at');
 
-            // ถ้าไม่ใช่ superadmin ให้นับเฉพาะ activity ที่เปิด
-            if (auth()->user()->role != 2) {
-                $activitiesQuery->where('status', 1);
-            }
+        // ถ้าไม่ใช่ superadmin ให้นับเฉพาะ activity ที่เปิด
+        if (auth()->user()->role != 2 && auth()->user()->role !== 'superadmin') {
+            $activitiesQuery->where('status', 1);
+        }
 
-            $project->count_activity_real = (clone $activitiesQuery)
-                ->whereNull('deleted_at')
-                ->count();
+        $project->count_activity_real = (clone $activitiesQuery)
+            ->count();
 
-            $project->count_activity_report_real = (clone $activitiesQuery)
-                ->whereNull('deleted_at')
-                ->where('status_report', 1)
-                ->count();
+        $project->count_activity_report_real = (clone $activitiesQuery)
+            ->where('status_report', 1)
+            ->count();
 
-            $project->count_activity = (clone $activitiesQuery)
-                ->where('status', 1)
-                ->whereNull('deleted_at')
-                ->count();
+        $project->count_activity = (clone $activitiesQuery)
+            ->where('status', 1)
+            ->count();
 
-            $project->count_activity_report = (clone $activitiesQuery)
-                ->where('status', 1)
-                ->whereNull('deleted_at')
-                ->where('status_report', 1)
-                ->count();
-
-            return $project;
-        });
+        $project->count_activity_report = (clone $activitiesQuery)
+            ->where('status', 1)
+            ->where('status_report', 1)
+            ->count();
 
         return $project;
-    }
+    });
+
+    return $project;
+}
 
     public function getByIDUser($id, $perPage)
     {

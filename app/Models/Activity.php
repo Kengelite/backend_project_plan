@@ -63,7 +63,7 @@ class Activity extends Model
     }
     public function ActivityUsers()
     {
-        return $this->hasMany(ActivityUser::class, 'id_activity');
+        return $this->hasMany(ActivityUser::class, 'id_activity', 'activity_id');
     }
     public function department()
     {
@@ -71,7 +71,7 @@ class Activity extends Model
     }
     public function ObjectiveActivity()
     {
-        return $this->hasMany(ObjectiveActivity::class, 'id_activity');
+        return $this->hasMany(ObjectiveActivity::class, 'id_activity', 'activity_id');
     }
     public function activityOkr()
     {
