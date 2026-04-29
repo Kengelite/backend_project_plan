@@ -896,6 +896,7 @@ private function attachSpendMoneyDataForWord($activities)
             // $actionPlanDB = ActionPlan::findOrFail($actionPlanDTO->actionPlanID);
 
             // อัปเดตข้อมูลโครงการ
+            $projectDB->id = $projectDTO->id;
             $projectDB->name_activity = $projectDTO->nameActivity;
             $projectDB->abstract = $projectDTO->abstract;
             $projectDB->time_start = $projectDTO->timeStart;

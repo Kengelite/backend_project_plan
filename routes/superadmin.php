@@ -161,6 +161,7 @@ Route::group(['prefix' => '/v1'], function () {
         Route::post('dashboardbardepartment', [DashboardController::class, 'pie']);
         Route::post('dashboardlinestrategicreport', [DashboardController::class, 'LineStrategicReport']);
         Route::get('/send-mail/{id}/{type}', [EmailController::class, 'sendEmail']);
+        Route::get('/send-mail-okr/{id}/{type}', [EmailController::class, 'sendEmailOkr']);
 
         Route::get('/testmail/{id}/{type}', [EmailController::class, 'testEmail']);
 

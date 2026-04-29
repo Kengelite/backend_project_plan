@@ -35,6 +35,7 @@ class OkrService
                 'okr.end_date',
                 'okr.status_report',
                 'okr.id_unit',
+                'okr.count_send_email',
             )
             ->whereNull('okr.deleted_at')
             // ->whereNull('detail_year_OKR.deleted_at')
@@ -67,6 +68,7 @@ class OkrService
                 'okr.start_date',
                 'okr.end_date',
                 'okr.status_report',
+                'okr.count_send_email',
             )
             ->whereNull('okr.deleted_at')
             // ->whereNull('detail_year_OKR.deleted_at')
@@ -250,5 +252,46 @@ class OkrService
             }
             return $DB;
         });
+    }
+
+    public function getByIDforSendEmail($id)
+    {
+        $okr = Okr::where('okr_id', $id)
+            ->whereNull('deleted_at')
+            ->first();
+
+        if (!$okr) {
+            throw new \Exception('ไม่พบข้อมูล OKR');
+        }
+
+        return $okr;
+    }
+
+    public function updateSendEmailByID($id)
+    {
+        $okr = Okr::where('okr_id', $id)
+            ->whereNull('deleted_at')
+            ->first();
+
+        if (!$okr) {
+            throw new \Exception('ไม่พบข้อมูล OKR');
+        }
+
+        $okr->count_send_email = ((int) $okr->count_send_email) + 1;
+        $okr->save();
+
+        return $okr;
+    }
+
+    public function getUserByIDOkr($id)
+    {
+        return OkrUser::where('id_okr', $id)
+            ->with([
+                'user' => function ($query) {
+                    $query->whereNull('deleted_at')
+                        ->whereNotNull('email');
+                }
+            ])
+            ->get();
     }
 }
