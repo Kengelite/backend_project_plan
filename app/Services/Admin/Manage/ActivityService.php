@@ -411,36 +411,96 @@ class ActivityService
     }
 
     public function getByIDYear($id, $perPage)
-    {
-        $query = Activity::where('id_year', $id)
-            ->with('project')
-            ->with('project.actionplan')
-            ->with('project.actionplan.strategic')
-            ->withCount([
-                'activityDetails as activity_detail_count' => function ($q) {
-                    $q->whereNull('deleted_at');
-                }
-            ])
-            ->whereNull('deleted_at');
+{
+    $query = Activity::where('id_year', $id)
+        ->with([
+            // ปีงบประมาณของกิจกรรม
+            'year',
 
-        if (auth()->user()->role != 2) {
-            $query->where('status', 1);
-        }
+            // หน่วยงาน
+            'department',
 
-        $project = $query->orderBy('activity_id')
-            ->paginate($perPage)
-            ->withQueryString();
+            // โครงการ / แผนกลยุทธ์ / ยุทธศาสตร์
+            'project',
+            'project.actionplan',
+            'project.actionplan.strategic',
 
-        $project->getCollection()->transform(function ($activity) {
-            $activity->project_number = optional($activity->project)->project_number;
-            $activity->action_plan_number = optional(optional($activity->project)->actionplan)->action_plan_number;
-            $activity->strategic_number = optional(optional(optional($activity->project)->actionplan)->strategic)->strategic_number;
+            // ลักษณะโครงการ
+            'activityStyle',
 
-            return $activity;
-        });
+            // หลักธรรมาภิบาล
+            'activityPrinciple',
 
-        return $project;
+            // OKR
+            'activityOkr',
+            'activityOkr.okr',
+            'activityOkr.okr.unit',
+
+            // วัตถุประสงค์
+            'ObjectiveActivity',
+
+            // ตัวชี้วัดและค่าเป้าหมาย
+            'activityIndicator',
+            'activityIndicator.unit',
+
+            // รายละเอียดงบประมาณ
+            'activityspendmoney',
+            'activityspendmoney.unit',
+            'activityspendmoney.activityDetailSpendmoney',
+
+            // ผู้รับผิดชอบ
+            'ActivityUsers',
+            'ActivityUsers.user',
+        ])
+        ->withCount([
+            'activityDetails as activity_detail_count' => function ($q) {
+                $q->whereNull('deleted_at');
+            }
+        ])
+        ->whereNull('deleted_at');
+
+    if (auth()->user()->role != 2) {
+        $query->where('status', 1);
     }
+
+    $activities = $query
+        ->orderBy('activity_id')
+        ->paginate($perPage)
+        ->withQueryString();
+
+    $activities->getCollection()->transform(function ($activity) {
+        $project = $activity->project;
+        $actionplan = optional($project)->actionplan;
+        $strategic = optional($actionplan)->strategic;
+
+        $activity->project_number = optional($project)->project_number;
+        $activity->project_name = optional($project)->project_name;
+
+        $activity->action_plan_number = optional($actionplan)->action_plan_number;
+        $activity->action_plan_name = optional($actionplan)->name_ap;
+
+        $activity->strategic_number = optional($strategic)->strategic_number;
+        $activity->strategic_name = optional($strategic)->strategic_name;
+
+        /*
+         * alias ให้ตรงกับ frontend
+         * เพราะ frontend ใช้ row.activity_style, row.activity_principle,
+         * row.activity_okr, row.objective_activity, row.activity_indicator,
+         * row.activityspendmoney, row.activity_users
+         */
+        $activity->activity_style = $activity->activityStyle ?? collect();
+        $activity->activity_principle = $activity->activityPrinciple ?? collect();
+        $activity->activity_okr = $activity->activityOkr ?? collect();
+        $activity->objective_activity = $activity->ObjectiveActivity ?? collect();
+        $activity->activity_indicator = $activity->activityIndicator ?? collect();
+        $activity->activityspendmoney = $activity->activityspendmoney ?? collect();
+        $activity->activity_users = $activity->ActivityUsers ?? collect();
+
+        return $activity;
+    });
+
+    return $activities;
+}
 
 public function getResponsibleByProject($id_project, $perPage)
 {
